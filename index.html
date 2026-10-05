@@ -219,11 +219,11 @@
     .slide-element {
       position: absolute; cursor: move; user-select: none;
       border: 1px transparent dashed; padding: 4px; outline: none;
-      min-width: 40px; min-height: 20px;
+      min-width: 40px; min-height: 20px; word-break: break-word;
     }
 
     .slide-element.selected { border: 1px dashed var(--accent) !important; }
-    .slide-element[contenteditable="true"] { cursor: text; }
+    .slide-element[contenteditable="true"] { cursor: text; user-select: text; }
 
     .element-card {
       background: #000000; border: 2px solid var(--accent);
@@ -265,7 +265,7 @@
       letter-spacing: 1px; display: flex; align-items: center; gap: 6px;
     }
 
-    /* MODO PRESENTACIÓN PANTALLA COMPLETA */
+    /* MODO PRESENTACIÓN PANTALLA COMPLETA ADAPTADA */
     .presentation-overlay {
       display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: #000000; z-index: 9999; justify-content: center; align-items: center;
@@ -274,14 +274,25 @@
     .presentation-overlay.active { display: flex; }
 
     .presentation-slide {
-      width: 100vw; height: 56.25vw; max-height: 100vh; max-width: 177.77vh;
+      width: 96vw; height: 54vw; max-height: 92vh; max-width: 163.5vh;
       background: var(--slide-bg); position: relative; border: none;
       box-shadow: 0 0 50px rgba(0,0,0,0.9); overflow: hidden;
     }
 
+    /* BOTÓN SALIR VISIBLE EN PRESENTACIÓN */
+    .exit-presentation-btn {
+      position: absolute; top: 16px; right: 16px; z-index: 10001;
+      background: #000000; color: #ff4444; border: 2px solid #ff4444;
+      padding: 8px 16px; font-family: 'Oswald', sans-serif; font-weight: 700;
+      font-size: 12px; letter-spacing: 1px; cursor: pointer;
+      box-shadow: 0 0 10px rgba(255, 68, 68, 0.4); transition: 0.2s;
+    }
+    .exit-presentation-btn:hover { background: #ff4444; color: #000000; }
+
     .presentation-controls {
-      position: absolute; bottom: 12px; right: 12px; display: flex; gap: 8px;
-      opacity: 0.2; transition: opacity 0.3s; z-index: 10000;
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px;
+      opacity: 0.3; transition: opacity 0.3s; z-index: 10000; background: rgba(0,0,0,0.8);
+      padding: 6px 12px; border: 1px solid var(--border);
     }
     .presentation-controls:hover { opacity: 1; }
 
@@ -338,7 +349,7 @@
         <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
       </div>
 
-      <!-- SECCIÓN COLOR NEÓN ACENTO CON MONOCROMÁTICO AÑADIDO -->
+      <!-- SECCIÓN COLOR NEÓN ACENTO -->
       <details>
         <summary>🌈 Color Neón Acento</summary>
         <div class="menu-group">
@@ -420,7 +431,7 @@
       <input type="color" style="width:30px; height:20px; border:none; cursor:pointer;" id="textColorInput" onchange="updateSelectedElement('color', this.value)">
 
       <span style="color:var(--border); opacity:0.3;">|</span>
-      <button class="tool-btn" onclick="updateSelectedElement('fontWeight', 'bold')"><b>B</b></button>
+      <button class="tool-btn" onclick="toggleBoldSelectedElement()"><b>B</b></button>
       <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'left')">⬅</button>
       <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'center')">↔</button>
       <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'right')">➡</button>
@@ -467,11 +478,14 @@
 
   <!-- OVERLAY DE PRESENTACIÓN A PANTALLA COMPLETA -->
   <div class="presentation-overlay" id="presentationOverlay">
+    <!-- BOTÓN DE SALIDA VISIBLE -->
+    <button class="exit-presentation-btn" onclick="endPresentation()">✕ SALIR [ESC]</button>
+    
     <div class="presentation-slide" id="presentationCanvas"></div>
+    
     <div class="presentation-controls">
       <button class="tool-btn" onclick="prevSlide()">◀ Anterior</button>
       <button class="tool-btn" onclick="nextSlide()">Siguiente ▶</button>
-      <button class="tool-btn" style="color:var(--accent);" onclick="endPresentation()">ESC (Salir)</button>
     </div>
   </div>
 
@@ -496,9 +510,9 @@
         id: 1,
         bg: '#0a0a0a',
         elements: [
-          { id: 'el_1', type: 'title', content: 'MEOW SLIDES APP', x: 60, y: 100, fontSize: '42px', color: '#00ff66', fontWeight: 'bold', textAlign: 'left', width: 600 },
-          { id: 'el_2', type: 'text', content: 'Sistema de Presentaciones Cyberpunk v2.0', x: 60, y: 180, fontSize: '18px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 600 },
-          { id: 'el_3', type: 'card', content: '💡 CONSEJO: Haz clic en cualquier elemento para moverlo o editarlo libremente.', x: 60, y: 250, fontSize: '13px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 480 }
+          { id: 'el_1', type: 'title', content: 'MEOW SLIDES APP', x: 60, y: 80, fontSize: '42px', color: '#00ff66', fontWeight: 'bold', textAlign: 'left', width: 600 },
+          { id: 'el_2', type: 'text', content: 'Sistema de Presentaciones Cyberpunk v2.0', x: 60, y: 160, fontSize: '18px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 600 },
+          { id: 'el_3', type: 'card', content: '💡 CONSEJO: Haz clic en cualquier elemento para editar su contenido, color o posición.', x: 60, y: 240, fontSize: '13px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 480 }
         ]
       }
     ];
@@ -521,6 +535,7 @@
       localStorage.setItem('meow_slides_accent', color);
       const picker = document.getElementById('appAccentColor');
       if (picker) picker.value = color;
+      renderCurrentSlide();
     }
 
     function toggleTheme() { document.body.classList.toggle('light-mode'); }
@@ -531,11 +546,12 @@
 
     // GESTIÓN DE SLIDES
     function addSlide() {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66';
       const newSlide = {
         id: Date.now(),
         bg: '#0a0a0a',
         elements: [
-          { id: 'el_' + Date.now(), type: 'title', content: 'NUEVA DIAPOSITIVA', x: 60, y: 150, fontSize: '32px', color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66', fontWeight: 'bold', textAlign: 'center', width: 600 }
+          { id: 'el_' + Date.now(), type: 'title', content: 'NUEVA DIAPOSITIVA', x: 60, y: 150, fontSize: '32px', color: accent, fontWeight: 'bold', textAlign: 'center', width: 600 }
         ]
       };
       slides.push(newSlide);
@@ -589,6 +605,8 @@
     function setSlideBg(color) {
       slides[currentSlideIdx].bg = color;
       document.getElementById('slideCanvas').style.backgroundColor = color;
+      const bgPicker = document.getElementById('slideBgColor');
+      if (bgPicker) bgPicker.value = color;
       renderSlidesNav();
       saveProject();
     }
@@ -611,7 +629,6 @@
         const titleEl = slide.elements.find(e => e.type === 'title' || e.type === 'text');
         preview.innerText = titleEl ? titleEl.content.substring(0, 20) : 'Slide ' + (idx + 1);
 
-        // BOTONES DE CONTROL EN CADA THUMBNAIL
         const ctrl = document.createElement('div');
         ctrl.style.cssText = "position:absolute; bottom:2px; right:2px; display:flex; gap:2px;";
         ctrl.innerHTML = `
@@ -631,7 +648,7 @@
       document.getElementById('totalSlidesNum').innerText = slides.length;
     }
 
-    // RENDERIZADO DEL CANVAS EN EDICIÓN
+    // RENDERIZADO DEL CANVAS EN EDICIÓN Y EDICIÓN POSTERIOR DE ELEMENTOS
     function renderCurrentSlide() {
       const canvas = document.getElementById('slideCanvas');
       canvas.innerHTML = '';
@@ -657,10 +674,23 @@
         } else {
           elemDiv.innerText = el.content;
           elemDiv.contentEditable = true;
-          elemDiv.oninput = (e) => { el.content = e.target.innerText; renderSlidesNav(); saveProject(); };
+          
+          // Permite la edición posterior al insertarlo
+          elemDiv.oninput = (e) => { 
+            el.content = e.target.innerText; 
+            renderSlidesNav(); 
+            saveProject(); 
+          };
+          
+          elemDiv.onblur = () => {
+            saveProject();
+          };
         }
 
-        elemDiv.onclick = (e) => { e.stopPropagation(); selectElement(el.id); };
+        elemDiv.onclick = (e) => { 
+          e.stopPropagation(); 
+          selectElement(el.id); 
+        };
 
         makeDraggable(elemDiv, el);
         canvas.appendChild(elemDiv);
@@ -669,7 +699,7 @@
       canvas.onclick = () => { selectedElementId = null; renderCurrentSlide(); };
     }
 
-    // SELECCIÓN Y EDICIÓN DE ELEMENTOS
+    // SELECCIÓN Y ACTUALIZACIÓN EN BARRA DE HERRAMIENTAS
     function selectElement(id) {
       selectedElementId = id;
       const slide = slides[currentSlideIdx];
@@ -692,6 +722,17 @@
       }
     }
 
+    function toggleBoldSelectedElement() {
+      if (!selectedElementId) return;
+      const slide = slides[currentSlideIdx];
+      const el = slide.elements.find(item => item.id === selectedElementId);
+      if (el) {
+        el.fontWeight = (el.fontWeight === 'bold') ? 'normal' : 'bold';
+        renderCurrentSlide();
+        saveProject();
+      }
+    }
+
     function deleteSelectedElement() {
       if (!selectedElementId) return;
       const slide = slides[currentSlideIdx];
@@ -703,19 +744,19 @@
 
     function addElement(type) {
       const slide = slides[currentSlideIdx];
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66';
       const newEl = {
         id: 'el_' + Date.now(),
         type: type,
         content: type === 'title' ? 'TÍTULO NUEVO' : (type === 'card' ? 'Texto de Tarjeta Cyber' : 'Texto borrador...'),
         x: 80, y: 80 + (slide.elements.length * 25),
         fontSize: type === 'title' ? '28px' : '15px',
-        color: type === 'title' ? getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() : '#ffffff',
+        color: type === 'title' ? accent : '#ffffff',
         fontWeight: type === 'title' ? 'bold' : 'normal',
         textAlign: 'left', width: 400
       };
       slide.elements.push(newEl);
-      selectedElementId = newEl.id;
-      renderCurrentSlide();
+      selectElement(newEl.id);
       saveProject();
     }
 
@@ -775,7 +816,6 @@
         slide.background = { color: bgHex };
 
         slideData.elements.forEach(el => {
-          // Conversión de coordenadas de Canvas (720x405) a pulgadas 16:9 (10 x 5.625)
           let xIn = (el.x / 720) * 10;
           let yIn = (el.y / 405) * 5.625;
           let wIn = ((el.width || 400) / 720) * 10;
@@ -817,7 +857,7 @@
       pptx.writeFile({ fileName: 'meow_slides_presentacion.pptx' });
     }
 
-    // MODO PRESENTACIÓN
+    // MODO PRESENTACIÓN CON ESCALADO ADAPTATIVO
     function startPresentation() {
       isPresenting = true;
       document.getElementById('presentationOverlay').classList.add('active');
@@ -835,16 +875,19 @@
       const slide = slides[currentSlideIdx];
       pCanvas.style.backgroundColor = slide.bg || '#0a0a0a';
 
+      // Factor de escala basado en el ancho real del contenedor de presentación frente al estándar (720px)
+      const scale = pCanvas.clientWidth / 720;
+
       slide.elements.forEach(el => {
         const elemDiv = document.createElement('div');
         elemDiv.className = `slide-element ${el.type === 'card' ? 'element-card' : ''}`;
-        elemDiv.style.left = (el.x * 1.6) + 'px';
-        elemDiv.style.top = (el.y * 1.6) + 'px';
-        elemDiv.style.fontSize = (parseInt(el.fontSize) * 1.4) + 'px';
+        elemDiv.style.left = (el.x * scale) + 'px';
+        elemDiv.style.top = (el.y * scale) + 'px';
+        elemDiv.style.fontSize = (parseInt(el.fontSize) * scale) + 'px';
         elemDiv.style.color = el.color || 'var(--text)';
         elemDiv.style.fontWeight = el.fontWeight || 'normal';
         elemDiv.style.textAlign = el.textAlign || 'left';
-        if (el.width) elemDiv.style.width = (el.width * 1.6) + 'px';
+        if (el.width) elemDiv.style.width = (el.width * scale) + 'px';
 
         if (el.type === 'image') {
           elemDiv.classList.add('element-image');
@@ -877,6 +920,10 @@
           if (e.key === 'ArrowLeft') prevSlide();
           if (e.key === 'Escape') endPresentation();
         }
+      });
+
+      window.addEventListener('resize', () => {
+        if (isPresenting) renderPresentationSlide();
       });
     }
 
