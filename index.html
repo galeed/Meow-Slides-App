@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Meow Slides App - Cyberpunk Presentation Builder</title>
+  <title>Meow Slides App - Cyberpunk Presentation Builder v3.0</title>
 
   <!-- Tipografías -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
 
-  <!-- Librería externa para generación real de archivos PowerPoint (.pptx) -->
+  <!-- Librería externa para exportación PowerPoint (.pptx) -->
   <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 
   <style>
@@ -23,7 +23,7 @@
       --grid-line: #222222;
       --cell-bg: #000000;
       --cell-active: #111111;
-      --accent: #00ff66; /* Color de acento dinámico */
+      --accent: #00ff66;
       --border-thick: 2px;
       --border-thin: 1px;
       --slide-bg: #0a0a0a;
@@ -60,10 +60,8 @@
     .header-btn {
       background: transparent; color: var(--text); border: none;
       padding: 8px; font-size: 11px; letter-spacing: 1px; cursor: pointer; text-transform: uppercase;
-      display: flex; align-items: center; justify-content: center;
-      font-family: inherit;
+      display: flex; align-items: center; justify-content: center; font-family: inherit;
     }
-
     .header-btn.bordered { border-right: var(--border-thick) solid var(--border); }
     .header-btn.bordered-left { border-left: var(--border-thick) solid var(--border); }
     .header-btn:hover { background: var(--text); color: var(--app-bg); }
@@ -74,27 +72,21 @@
       color: var(--text); display: flex; align-items: center; justify-content: center; gap: 8px;
     }
 
-    .header-actions {
-      display: flex; align-items: center; border-left: var(--border-thick) solid var(--border);
-    }
+    .header-actions { display: flex; align-items: center; border-left: var(--border-thick) solid var(--border); }
 
     .present-btn {
       background: var(--accent); color: #000000; font-family: 'Oswald', sans-serif;
       font-weight: 700; border: none; padding: 0 16px; height: 100%; cursor: pointer;
-      font-size: 13px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;
-      transition: opacity 0.2s;
+      font-size: 13px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;
     }
     .present-btn:hover { opacity: 0.85; }
 
-    /* MENÚ LATERAL (SIDEBAR DE HERRAMIENTAS) */
-    .sidebar-overlay {
-      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); z-index: 199;
-    }
+    /* MENÚ LATERAL */
+    .sidebar-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 199; }
     .sidebar-overlay.show { display: block; }
 
     .sidebar {
-      position: absolute; top: 0; left: -300px; width: 280px; height: 100%;
+      position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
       background: var(--app-bg); border-right: var(--border-thick) solid var(--border);
       z-index: 200; transition: left 0.3s ease; display: flex; flex-direction: column;
       box-shadow: 5px 0 15px rgba(0,0,0,0.8); overflow-y: auto;
@@ -107,9 +99,7 @@
       font-family: 'Oswald', sans-serif; font-weight: bold; font-size: 14px; letter-spacing: 1px;
     }
 
-    .sidebar-close {
-      background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer;
-    }
+    .sidebar-close { background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer; }
 
     details { border-bottom: var(--border-thin) solid var(--border); }
     summary {
@@ -121,10 +111,7 @@
     summary:after { content: "▼"; font-size: 10px; color: var(--text); }
     details[open] summary:after { content: "▲"; }
 
-    .menu-group {
-      display: flex; flex-direction: column; background: var(--cell-bg);
-      padding: 8px 12px; gap: 8px;
-    }
+    .menu-group { display: flex; flex-direction: column; background: var(--cell-bg); padding: 8px 12px; gap: 8px; }
 
     .menu-action {
       background: var(--app-bg); color: var(--text); border: var(--border-thin) solid var(--border);
@@ -135,13 +122,12 @@
     .menu-action:hover { background: var(--text); color: var(--app-bg); }
 
     .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
-
     .color-picker-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
     .color-picker-row input[type="color"] { width: 40px; height: 24px; padding: 0; border: 1px solid var(--border); cursor: pointer; }
 
     /* BARRA DE EDICIÓN RÁPIDA SUPERIOR */
     .toolbar-formatting {
-      display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+      display: flex; align-items: center; gap: 6px; padding: 6px 12px;
       border-bottom: var(--border-thick) solid var(--border); background: var(--app-bg);
       overflow-x: auto; flex-shrink: 0;
     }
@@ -159,12 +145,10 @@
       font-family: inherit; text-align: center;
     }
 
-    /* WORKSPACE PRINCIPAL REORGANIZADO VERTICALMENTE */
-    .workspace {
-      display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative;
-    }
+    /* WORKSPACE PRINCIPAL */
+    .workspace { display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative; }
 
-    /* ÁREA SUPERIOR: LIENZO EN EDICIÓN */
+    /* AREA SUPERIOR DE EDICION */
     .editor-container {
       flex: 1; background: var(--bg); display: flex; justify-content: center;
       align-items: center; padding: 16px; overflow: auto; position: relative;
@@ -176,9 +160,27 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden; flex-shrink: 0;
     }
 
-    /* ÁREA INFERIOR: TIRA HORIZONTAL DE DIAPOSITIVAS */
+    /* GUÍAS DE ALINEACIÓN DINÁMICAS (SNAP LINES) */
+    .snap-line {
+      position: absolute; background: var(--accent); z-index: 99; pointer-events: none; display: none;
+    }
+    .snap-line.vertical { width: 1px; height: 100%; top: 0; }
+    .snap-line.horizontal { height: 1px; width: 100%; left: 0; }
+
+    /* SECCIÓN DE NOTAS DEL ORADOR */
+    .speaker-notes-container {
+      border-top: var(--border-thin) solid var(--border); background: var(--app-bg);
+      padding: 6px 12px; display: flex; flex-direction: column; flex-shrink: 0;
+    }
+    .speaker-notes-header { font-size: 10px; font-family: 'Oswald', sans-serif; color: var(--accent); letter-spacing: 1px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .speaker-notes-input {
+      width: 100%; height: 38px; background: var(--cell-bg); color: var(--text); border: var(--border-thin) solid var(--border);
+      padding: 4px 8px; font-size: 11px; font-family: inherit; resize: none; outline: none;
+    }
+
+    /* AREA INFERIOR: NAV DE SLIDES HORIZONTAL */
     .slides-nav {
-      height: 125px; border-top: var(--border-thick) solid var(--border);
+      height: 110px; border-top: var(--border-thick) solid var(--border);
       background: var(--app-bg); display: flex; align-items: center; flex-shrink: 0;
       padding: 8px 12px; gap: 12px; overflow-x: auto;
     }
@@ -187,16 +189,12 @@
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       gap: 6px; padding-right: 12px; border-right: var(--border-thin) solid var(--border); height: 100%;
     }
-
     .slides-nav-title { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; color: var(--subtext); text-align: center; }
 
-    .slides-list {
-      display: flex; flex-direction: row; align-items: center; gap: 12px;
-      flex: 1; overflow-x: auto; height: 100%; padding-bottom: 2px;
-    }
+    .slides-list { display: flex; flex-direction: row; align-items: center; gap: 12px; flex: 1; overflow-x: auto; height: 100%; padding-bottom: 2px; }
 
     .slide-thumb {
-      height: 85px; aspect-ratio: 16/9; border: var(--border-thin) solid var(--border);
+      height: 75px; aspect-ratio: 16/9; border: var(--border-thin) solid var(--border);
       background: var(--slide-bg); cursor: pointer; position: relative; display: flex;
       flex-direction: column; justify-content: center; align-items: center;
       padding: 6px; transition: 0.2s; user-select: none; flex-shrink: 0;
@@ -206,100 +204,85 @@
 
     .slide-thumb-number {
       position: absolute; top: 3px; left: 3px; font-size: 8px;
-      background: rgba(0,0,0,0.8); color: var(--accent); padding: 1px 3px;
-      font-weight: bold; border: 1px solid var(--accent);
+      background: rgba(0,0,0,0.8); color: var(--accent); padding: 1px 3px; font-weight: bold; border: 1px solid var(--accent);
     }
 
-    .slide-thumb-preview {
-      font-size: 8px; color: var(--subtext); text-align: center; overflow: hidden;
-      max-height: 100%; word-break: break-all; padding: 2px;
-    }
+    .slide-thumb-preview { font-size: 8px; color: var(--subtext); text-align: center; overflow: hidden; max-height: 100%; word-break: break-all; padding: 2px; }
 
     /* ELEMENTOS DENTRO DE LA DIAPOSITIVA */
     .slide-element {
       position: absolute; cursor: move; user-select: none;
       border: 1px transparent dashed; padding: 4px; outline: none;
-      min-width: 40px; min-height: 20px; word-break: break-word;
+      min-width: 20px; min-height: 20px; word-break: break-word;
     }
-
     .slide-element.selected { border: 1px dashed var(--accent) !important; }
     .slide-element[contenteditable="true"] { cursor: text; user-select: text; }
 
-    .element-card {
-      background: #000000; border: 2px solid var(--accent);
-      padding: 12px; color: var(--text); border-radius: 0px;
-      box-shadow: 4px 4px 0px var(--accent);
-    }
-
+    .element-card { background: #000000; border: 2px solid var(--accent); padding: 12px; color: var(--text); box-shadow: 4px 4px 0px var(--accent); }
+    .element-line { height: 3px; background: var(--accent); min-height: 3px !important; box-shadow: 0 0 8px var(--accent); }
+    .element-shape-frame { border: 2px solid var(--accent); background: rgba(0,0,0,0.5); padding: 12px; clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px)); }
     .element-image img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 
-    /* FOOTER E INTEGRACIÓN DEL BOTÓN DE EXPORTACIÓN */
+    /* FOOTER */
     .sheet-footer {
       display: flex; align-items: center; justify-content: space-between;
       border-top: var(--border-thick) solid var(--border); background: var(--app-bg);
-      flex-shrink: 0; padding: 0 6px 0 12px; height: 38px;
+      flex-shrink: 0; padding: 0 6px 0 12px; height: 36px;
     }
-
     .slide-status { font-size: 11px; color: var(--subtext); font-weight: 600; }
     .slide-status span { color: var(--accent); }
 
-    /* BOTÓN EXPORTAR INTEGRADO DENTRO DE MARGEN */
     .export-integrated-btn {
       display: inline-flex; align-items: stretch; background-color: #000000;
-      border: 1.5px solid var(--accent); cursor: pointer; user-select: none;
-      flex-shrink: 0; margin: 3px 0; transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      border: 1.5px solid var(--accent); cursor: pointer; user-select: none; flex-shrink: 0; margin: 3px 0; transition: 0.3s;
     }
-
     .export-integrated-btn:hover { box-shadow: 0 0 8px var(--accent); }
+    .export-btn-prefix { background-color: #000000; color: #ffffff; padding: 3px 8px; font-family: monospace; font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; border-right: 1.5px solid var(--accent); }
+    .export-btn-main { background-color: #ffffff; color: #000000; padding: 3px 10px; font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
 
-    .export-btn-prefix {
-      background-color: #000000; color: #ffffff; padding: 3px 8px;
-      font-family: monospace; font-size: 11px; font-weight: bold;
-      display: flex; align-items: center; justify-content: center;
-      border-right: 1.5px solid var(--accent);
-    }
-
-    .export-btn-main {
-      background-color: #ffffff; color: #000000; padding: 3px 10px;
-      font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 11px;
-      letter-spacing: 1px; display: flex; align-items: center; gap: 6px;
-    }
-
-    /* MODO PRESENTACIÓN PANTALLA COMPLETA ADAPTADA */
-    .presentation-overlay {
-      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #000000; z-index: 9999; justify-content: center; align-items: center;
-    }
-
+    /* MODO PRESENTACIÓN & TRANSICIONES */
+    .presentation-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000000; z-index: 9999; justify-content: center; align-items: center; }
     .presentation-overlay.active { display: flex; }
 
     .presentation-slide {
       width: 96vw; height: 54vw; max-height: 92vh; max-width: 163.5vh;
       background: var(--slide-bg); position: relative; border: none;
-      box-shadow: 0 0 50px rgba(0,0,0,0.9); overflow: hidden;
+      box-shadow: 0 0 50px rgba(0,0,0,0.9); overflow: hidden; transition: all 0.4s ease;
     }
 
-    /* BOTÓN SALIR VISIBLE EN PRESENTACIÓN */
+    /* EFECTOS DE TRANSICIÓN Cyberpunk */
+    .trans-fade { animation: fadeIn 0.4s ease-in-out; }
+    .trans-glitch { animation: glitchAnim 0.3s ease; }
+    .trans-slide { animation: slideIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes glitchAnim {
+      0% { transform: translate(0); filter: hue-rotate(0deg); }
+      20% { transform: translate(-5px, 5px); filter: hue-rotate(90deg); }
+      40% { transform: translate(5px, -5px); filter: hue-rotate(180deg); }
+      60% { transform: translate(-3px, -3px); filter: hue-rotate(270deg); }
+      100% { transform: translate(0); filter: hue-rotate(0deg); }
+    }
+
     .exit-presentation-btn {
       position: absolute; top: 16px; right: 16px; z-index: 10001;
       background: #000000; color: #ff4444; border: 2px solid #ff4444;
       padding: 8px 16px; font-family: 'Oswald', sans-serif; font-weight: 700;
-      font-size: 12px; letter-spacing: 1px; cursor: pointer;
-      box-shadow: 0 0 10px rgba(255, 68, 68, 0.4); transition: 0.2s;
+      font-size: 12px; letter-spacing: 1px; cursor: pointer; box-shadow: 0 0 10px rgba(255, 68, 68, 0.4);
     }
     .exit-presentation-btn:hover { background: #ff4444; color: #000000; }
 
     .presentation-controls {
       position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); display: flex; gap: 12px;
-      opacity: 0.3; transition: opacity 0.3s; z-index: 10000; background: rgba(0,0,0,0.8);
-      padding: 6px 12px; border: 1px solid var(--border);
+      opacity: 0.3; transition: opacity 0.3s; z-index: 10000; background: rgba(0,0,0,0.8); padding: 6px 12px; border: 1px solid var(--border);
     }
     .presentation-controls:hover { opacity: 1; }
 
-    /* MODAL */
+    /* MODALES Y ATAJOS */
     .modal {
       display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      width: 90%; max-width: 450px; background: var(--app-bg); border: var(--border-thick) solid var(--border);
+      width: 90%; max-width: 480px; background: var(--app-bg); border: var(--border-thick) solid var(--border);
       padding: 16px; z-index: 300; box-shadow: 0 0 20px rgba(0,0,0,0.9);
     }
     .modal-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; font-size: 12px; color: var(--accent); }
@@ -308,16 +291,16 @@
     .modal-btn:hover { background: var(--text); color: var(--app-bg); }
     .tool-input { background: var(--app-bg); color: var(--text); border: var(--border-thin) solid var(--border); padding: 6px; font-size: 11px; outline: none; font-family: inherit; width: 100%; }
 
+    .shortcut-list { font-size: 11px; display: flex; flex-direction: column; gap: 6px; color: var(--subtext); }
+    .shortcut-list span { color: var(--accent); font-weight: bold; }
+
     @media print {
       body { padding: 0; background: #fff; color: #000; }
       .app-frame { border: none; max-width: 100%; height: auto; }
-      header, .toolbar-formatting, .slides-nav, .sheet-footer, .sidebar, .sidebar-overlay, .modal { display: none !important; }
+      header, .toolbar-formatting, .slides-nav, .sheet-footer, .sidebar, .sidebar-overlay, .modal, .speaker-notes-container { display: none !important; }
       .workspace { overflow: visible; display: block; }
       .editor-container { padding: 0; background: none; }
-      .slide-canvas {
-        page-break-after: always; width: 100% !important; height: 100vh !important;
-        border: none !important; box-shadow: none !important;
-      }
+      .slide-canvas { page-break-after: always; width: 100% !important; height: 100vh !important; border: none !important; box-shadow: none !important; }
     }
   </style>
 </head>
@@ -329,7 +312,7 @@
     <header>
       <button class="header-btn bordered" onclick="toggleSidebar()" title="Menú de Herramientas">☰</button>
       <div class="brand-title">
-        <span>MEOW SLIDES APP</span>
+        <span>MEOW SLIDES APP v3.0</span>
       </div>
       <div class="header-actions">
         <button class="present-btn" onclick="startPresentation()">
@@ -339,47 +322,16 @@
       <button class="header-btn bordered-left" onclick="toggleTheme()" title="Modo Oscuro/Claro">🌙</button>
     </header>
 
-    <!-- OVERLAY SIDEBAR -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- PANEL LATERAL DE HERRAMIENTAS -->
+    <!-- PANEL LATERAL CON MENÚS ORGANIZADOS -->
     <div class="sidebar" id="mainSidebar">
       <div class="sidebar-header">
         <span>HERRAMIENTAS DE SLIDES</span>
         <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
       </div>
 
-      <!-- SECCIÓN COLOR NEÓN ACENTO -->
-      <details>
-        <summary>🌈 Color Neón Acento</summary>
-        <div class="menu-group">
-          <button class="menu-action" onclick="changeAccentColor('#00ff66')">
-            <span class="color-dot" style="background:#00ff66;"></span> Verde Cyber
-          </button>
-          <button class="menu-action" onclick="changeAccentColor('#ff007f')">
-            <span class="color-dot" style="background:#ff007f;"></span> Magenta Neón
-          </button>
-          <button class="menu-action" onclick="changeAccentColor('#00f3ff')">
-            <span class="color-dot" style="background:#00f3ff;"></span> Cyan Eléctrico
-          </button>
-          <button class="menu-action" onclick="changeAccentColor('#ffe600')">
-            <span class="color-dot" style="background:#ffe600;"></span> Amarillo Neón
-          </button>
-          <button class="menu-action" onclick="changeAccentColor('#ffb000')">
-            <span class="color-dot" style="background:#ffb000;"></span> Ámbar Neón
-          </button>
-          <button class="menu-action" onclick="changeAccentColor('#ffffff')">
-            <span class="color-dot" style="background:#ffffff; border: 1px solid #888;"></span> Monocromo
-          </button>
-          
-          <div class="color-picker-row" style="margin-top:4px;">
-            <span>Personalizado:</span>
-            <input type="color" id="appAccentColor" value="#00ff66" onchange="changeAccentColor(this.value)">
-          </div>
-        </div>
-      </details>
-
-      <!-- AGREGAR ELEMENTOS -->
+      <!-- SECCIÓN 1: INSERTAR ELEMENTOS -->
       <details open>
         <summary>➕ Insertar Elemento</summary>
         <div class="menu-group">
@@ -390,7 +342,45 @@
         </div>
       </details>
 
-      <!-- FONDO Y DIAPOSITIVA -->
+      <!-- SECCIÓN 2: FORMAS Y ELEMENTOS HUD (NUEVA) -->
+      <details>
+        <summary>📐 Formas & Separadores HUD</summary>
+        <div class="menu-group">
+          <button class="menu-action" onclick="addElement('line'); toggleSidebar()">⚡ Línea Neón Horizontal</button>
+          <button class="menu-action" onclick="addElement('frame'); toggleSidebar()">✂️ Marco Recortado Cyber</button>
+          <button class="menu-action" onclick="addElement('arrow'); toggleSidebar()">➔ Flecha Neón</button>
+        </div>
+      </details>
+
+      <!-- SECCIÓN 3: COLOR DE ACENTO NEÓN -->
+      <details>
+        <summary>🌈 Color Neón Acento</summary>
+        <div class="menu-group">
+          <button class="menu-action" onclick="changeAccentColor('#00ff66')"><span class="color-dot" style="background:#00ff66;"></span> Verde Cyber</button>
+          <button class="menu-action" onclick="changeAccentColor('#ff007f')"><span class="color-dot" style="background:#ff007f;"></span> Magenta Neón</button>
+          <button class="menu-action" onclick="changeAccentColor('#00f3ff')"><span class="color-dot" style="background:#00f3ff;"></span> Cyan Eléctrico</button>
+          <button class="menu-action" onclick="changeAccentColor('#ffe600')"><span class="color-dot" style="background:#ffe600;"></span> Amarillo Neón</button>
+          <button class="menu-action" onclick="changeAccentColor('#ffb000')"><span class="color-dot" style="background:#ffb000;"></span> Ámbar Neón</button>
+          <button class="menu-action" onclick="changeAccentColor('#ffffff')"><span class="color-dot" style="background:#ffffff; border: 1px solid #888;"></span> Monocromo</button>
+          
+          <div class="color-picker-row" style="margin-top:4px;">
+            <span>Personalizado:</span>
+            <input type="color" id="appAccentColor" value="#00ff66" onchange="changeAccentColor(this.value)">
+          </div>
+        </div>
+      </details>
+
+      <!-- SECCIÓN 4: TRANSICIONES Y EFECTOS (NUEVA) -->
+      <details>
+        <summary>🎬 Transición de Presentación</summary>
+        <div class="menu-group">
+          <button class="menu-action" onclick="setTransition('glitch'); toggleSidebar()">⚡ Efecto Glitch Cyber</button>
+          <button class="menu-action" onclick="setTransition('fade'); toggleSidebar()">🌫️ Desvanecimiento (Fade)</button>
+          <button class="menu-action" onclick="setTransition('slide'); toggleSidebar()">➡️ Desplazamiento (Slide)</button>
+        </div>
+      </details>
+
+      <!-- SECCIÓN 5: FONDO DE DIAPOSITIVA -->
       <details>
         <summary>🎨 Fondo de Diapositiva</summary>
         <div class="menu-group">
@@ -404,7 +394,7 @@
         </div>
       </details>
 
-      <!-- ARCHIVO Y EXPORTACIÓN -->
+      <!-- SECCIÓN 6: PROYECTOS Y EXPORTACIÓN -->
       <details>
         <summary>📁 Archivo & Proyectos</summary>
         <div class="menu-group">
@@ -412,12 +402,13 @@
           <button class="menu-action" onclick="exportPPTX(); toggleSidebar()">📊 Exportar PowerPoint (.PPTX)</button>
           <button class="menu-action" onclick="exportJSON(); toggleSidebar()">📥 Descargar Proyecto (.JSON)</button>
           <button class="menu-action" onclick="openModal('importModal'); toggleSidebar()">📤 Cargar Proyecto (.JSON)</button>
+          <button class="menu-action" onclick="openModal('shortcutsModal'); toggleSidebar()">⌨️ Atajos de Teclado</button>
           <button class="menu-action" onclick="window.print(); toggleSidebar()">🖨️ Imprimir / Guardar PDF</button>
         </div>
       </details>
     </div>
 
-    <!-- BARRA DE EDICIÓN RÁPIDA -->
+    <!-- BARRA DE EDICIÓN RÁPIDA SUPERIOR (CON CAPAS Y Z-INDEX) -->
     <div class="toolbar-formatting">
       <button class="tool-btn" onclick="addElement('title')">+ Título</button>
       <button class="tool-btn" onclick="addElement('text')">+ Texto</button>
@@ -436,36 +427,52 @@
       <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'center')">↔</button>
       <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'right')">➡</button>
       
+      <!-- CONTROLES DE CAPAS Y ORDEN (NUEVA) -->
       <span style="color:var(--border); opacity:0.3;">|</span>
-      <button class="tool-btn" style="color:#ff4444;" onclick="deleteSelectedElement()">🗑️ Eliminar Elemento</button>
+      <button class="tool-btn" onclick="changeZIndex(1)" title="Traer al frente">▲ Frente</button>
+      <button class="tool-btn" onclick="changeZIndex(-1)" title="Enviar al fondo">▼ Fondo</button>
+
+      <span style="color:var(--border); opacity:0.3;">|</span>
+      <button class="tool-btn" style="color:#ff4444;" onclick="deleteSelectedElement()">🗑️ Eliminar</button>
     </div>
 
-    <!-- WORKSPACE REORGANIZADO -->
+    <!-- WORKSPACE PRINCIPAL -->
     <div class="workspace">
       
-      <!-- LIENZO / DIAPOSITIVA EN EDICIÓN (ARRIBA) -->
+      <!-- CANVAS EN EDICIÓN Y LÍNEAS DE GUÍA DINÁMICAS (SNAP LINES) -->
       <div class="editor-container" id="editorContainer">
-        <div class="slide-canvas" id="slideCanvas"></div>
+        <div class="slide-canvas" id="slideCanvas">
+          <div class="snap-line vertical" id="snapV"></div>
+          <div class="snap-line horizontal" id="snapH"></div>
+        </div>
       </div>
 
-      <!-- NAV DE SLIDES HORIZONTAL (ABAJO) -->
+      <!-- ÁREA DE NOTAS DEL ORADOR (NUEVA) -->
+      <div class="speaker-notes-container">
+        <div class="speaker-notes-header">
+          <span>📝 NOTAS DEL ORADOR (SLIDE ACTUAL)</span>
+        </div>
+        <textarea class="speaker-notes-input" id="speakerNotesInput" placeholder="Escribe tus apuntes o recordatorios de esta diapositiva..." oninput="updateNotes(this.value)"></textarea>
+      </div>
+
+      <!-- TIRA HORIZONTAL DE SLIDES Y PLANTILLAS -->
       <div class="slides-nav">
         <div class="slides-nav-header">
           <span class="slides-nav-title">SLIDES</span>
-          <button class="tool-btn" onclick="addSlide()" title="Agregar Diapositiva">+</button>
+          <button class="tool-btn" onclick="addSlide()" title="Agregar Diapositiva Vacía">+</button>
+          <button class="tool-btn" onclick="openModal('templateModal')" style="font-size:9px;" title="Plantillas">📋 Plantillas</button>
         </div>
         <div class="slides-list" id="slidesList"></div>
       </div>
 
     </div>
 
-    <!-- BARRA INFERIOR DE ESTADO Y EXPORTACIÓN A POWERPOINT -->
+    <!-- FOOTER E EXPORTACIÓN -->
     <div class="sheet-footer">
       <div class="slide-status" id="slideStatus">
         DIAPOSITIVA <span id="currentSlideNum">1</span> DE <span id="totalSlidesNum">1</span>
       </div>
 
-      <!-- BOTÓN DE EXPORTAR POWERPOINT INTEGRADO -->
       <div class="export-integrated-btn" onclick="exportPPTX()" title="Exportar Presentación a PowerPoint (.pptx)">
         <div class="export-btn-prefix">&rarr;</div>
         <div class="export-btn-main">
@@ -476,13 +483,10 @@
 
   </div>
 
-  <!-- OVERLAY DE PRESENTACIÓN A PANTALLA COMPLETA -->
+  <!-- OVERLAY MODO PRESENTACIÓN -->
   <div class="presentation-overlay" id="presentationOverlay">
-    <!-- BOTÓN DE SALIDA VISIBLE -->
     <button class="exit-presentation-btn" onclick="endPresentation()">✕ SALIR [ESC]</button>
-    
     <div class="presentation-slide" id="presentationCanvas"></div>
-    
     <div class="presentation-controls">
       <button class="tool-btn" onclick="prevSlide()">◀ Anterior</button>
       <button class="tool-btn" onclick="nextSlide()">Siguiente ▶</button>
@@ -496,23 +500,46 @@
     <button class="modal-btn" onclick="confirmAddImage()">Añadir a la Diapositiva</button>
   </div>
 
-  <!-- MODAL CARGAR PROYECTO JSON -->
+  <!-- MODAL PLANTILLAS (NUEVO) -->
+  <div id="templateModal" class="modal">
+    <div class="modal-header"><span>SELECCIONAR PLANTILLA DE SLIDE</span><button class="modal-close" onclick="closeModal('templateModal')">✕</button></div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <button class="modal-btn" onclick="addSlideFromTemplate('title_subtitle')">📌 Portada Principal con Subtítulo</button>
+      <button class="modal-btn" onclick="addSlideFromTemplate('two_columns')">📊 Comparativa de 2 Columnas</button>
+      <button class="modal-btn" onclick="addSlideFromTemplate('card_hud')">🔲 Tarjeta Destacada tipo HUD</button>
+    </div>
+  </div>
+
+  <!-- MODAL ATAJOS DE TECLADO (NUEVO) -->
+  <div id="shortcutsModal" class="modal">
+    <div class="modal-header"><span>ATAJOS DE TECLADO</span><button class="modal-close" onclick="closeModal('shortcutsModal')">✕</button></div>
+    <div class="shortcut-list">
+      <div><span>Ctrl + C</span> : Copiar elemento seleccionado</div>
+      <div><span>Ctrl + V</span> : Pegar elemento copiado</div>
+      <div><span>Supr / Delete</span> : Eliminar elemento seleccionado</div>
+      <div><span>Flecha Izq / Der</span> : Cambiar diapositiva (en Presentación)</div>
+      <div><span>ESC</span> : Salir del modo Presentación</div>
+    </div>
+  </div>
+
+  <!-- MODAL CARGAR JSON -->
   <div id="importModal" class="modal">
     <div class="modal-header"><span>CARGAR PROYECTO (.JSON)</span><button class="modal-close" onclick="closeModal('importModal')">✕</button></div>
-    <textarea class="tool-input" id="importJsonInput" rows="6" placeholder="Pega aquí el contenido JSON de tu presentación..." style="margin-bottom:12px; resize:none;"></textarea>
+    <textarea class="tool-input" id="importJsonInput" rows="6" placeholder="Pega aquí el contenido JSON..." style="margin-bottom:12px; resize:none;"></textarea>
     <button class="modal-btn" onclick="confirmImportJSON()">Cargar Presentación</button>
   </div>
 
   <script>
-    // ESTRUCTURA DE DATOS
+    // ESTRUCTURA DE DATOS EXPANDIDA
     let slides = [
       {
         id: 1,
         bg: '#0a0a0a',
+        notes: 'Bienvenida a la presentación.',
         elements: [
-          { id: 'el_1', type: 'title', content: 'MEOW SLIDES APP', x: 60, y: 80, fontSize: '42px', color: '#00ff66', fontWeight: 'bold', textAlign: 'left', width: 600 },
-          { id: 'el_2', type: 'text', content: 'Sistema de Presentaciones Cyberpunk v2.0', x: 60, y: 160, fontSize: '18px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 600 },
-          { id: 'el_3', type: 'card', content: '💡 CONSEJO: Haz clic en cualquier elemento para editar su contenido, color o posición.', x: 60, y: 240, fontSize: '13px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 480 }
+          { id: 'el_1', type: 'title', content: 'MEOW SLIDES APP', x: 60, y: 80, fontSize: '42px', color: '#00ff66', fontWeight: 'bold', textAlign: 'left', width: 600, zIndex: 1 },
+          { id: 'el_2', type: 'text', content: 'Sistema Cyberpunk v3.0 con alineación e imantado', x: 60, y: 160, fontSize: '18px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 600, zIndex: 2 },
+          { id: 'el_3', type: 'card', content: '💡 CONSEJO: Arrastra los objetos para ver las líneas neón de alineación e imantado.', x: 60, y: 240, fontSize: '13px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 480, zIndex: 3 }
         ]
       }
     ];
@@ -520,6 +547,8 @@
     let currentSlideIdx = 0;
     let selectedElementId = null;
     let isPresenting = false;
+    let currentTransition = 'glitch';
+    let copiedElement = null;
 
     // INICIALIZACIÓN
     function init() {
@@ -529,7 +558,6 @@
       setupKeyboard();
     }
 
-    // CAMBIAR COLOR DE ACENTO
     function changeAccentColor(color) {
       document.documentElement.style.setProperty('--accent', color);
       localStorage.setItem('meow_slides_accent', color);
@@ -544,18 +572,51 @@
       document.getElementById('sidebarOverlay').classList.toggle('show');
     }
 
-    // GESTIÓN DE SLIDES
+    function setTransition(type) {
+      currentTransition = type;
+      alert("Transición cambiada a: " + type.toUpperCase());
+    }
+
+    // SLIDES Y PLANTILLAS
     function addSlide() {
       const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66';
       const newSlide = {
-        id: Date.now(),
-        bg: '#0a0a0a',
+        id: Date.now(), bg: '#0a0a0a', notes: '',
         elements: [
-          { id: 'el_' + Date.now(), type: 'title', content: 'NUEVA DIAPOSITIVA', x: 60, y: 150, fontSize: '32px', color: accent, fontWeight: 'bold', textAlign: 'center', width: 600 }
+          { id: 'el_' + Date.now(), type: 'title', content: 'NUEVA DIAPOSITIVA', x: 60, y: 150, fontSize: '32px', color: accent, fontWeight: 'bold', textAlign: 'center', width: 600, zIndex: 1 }
         ]
       };
       slides.push(newSlide);
       currentSlideIdx = slides.length - 1;
+      renderSlidesNav();
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    function addSlideFromTemplate(templateType) {
+      const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66';
+      let elements = [];
+
+      if (templateType === 'title_subtitle') {
+        elements = [
+          { id: 'el_t1', type: 'title', content: 'TÍTULO DE PORTADA', x: 60, y: 120, fontSize: '40px', color: accent, fontWeight: 'bold', textAlign: 'center', width: 600, zIndex: 1 },
+          { id: 'el_t2', type: 'text', content: 'Subtítulo o descripción breve del proyecto', x: 60, y: 200, fontSize: '18px', color: '#ffffff', fontWeight: 'normal', textAlign: 'center', width: 600, zIndex: 2 }
+        ];
+      } else if (templateType === 'two_columns') {
+        elements = [
+          { id: 'el_c1', type: 'title', content: 'COMPARATIVA DE CONCEPTOS', x: 60, y: 40, fontSize: '28px', color: accent, fontWeight: 'bold', textAlign: 'left', width: 600, zIndex: 1 },
+          { id: 'el_c2', type: 'card', content: 'COLUMNA A:\n- Punto clave 1\n- Punto clave 2', x: 60, y: 120, fontSize: '14px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 280, zIndex: 2 },
+          { id: 'el_c3', type: 'card', content: 'COLUMNA B:\n- Punto clave 1\n- Punto clave 2', x: 380, y: 120, fontSize: '14px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 280, zIndex: 3 }
+        ];
+      } else if (templateType === 'card_hud') {
+        elements = [
+          { id: 'el_h1', type: 'frame', content: 'PANEL HUD DESTACADO\nInformación crítica del sistema con estética neón.', x: 100, y: 100, fontSize: '16px', color: accent, fontWeight: 'bold', textAlign: 'center', width: 520, zIndex: 1 }
+        ];
+      }
+
+      slides.push({ id: Date.now(), bg: '#0a0a0a', notes: '', elements: elements });
+      currentSlideIdx = slides.length - 1;
+      closeModal('templateModal');
       renderSlidesNav();
       renderCurrentSlide();
       saveProject();
@@ -605,13 +666,16 @@
     function setSlideBg(color) {
       slides[currentSlideIdx].bg = color;
       document.getElementById('slideCanvas').style.backgroundColor = color;
-      const bgPicker = document.getElementById('slideBgColor');
-      if (bgPicker) bgPicker.value = color;
       renderSlidesNav();
       saveProject();
     }
 
-    // RENDERIZADO HORIZONTAL DE SLIDES (TIRA INFERIOR)
+    function updateNotes(text) {
+      slides[currentSlideIdx].notes = text;
+      saveProject();
+    }
+
+    // RENDERIZADO SLIDES NAV
     function renderSlidesNav() {
       const list = document.getElementById('slidesList');
       list.innerHTML = '';
@@ -648,24 +712,35 @@
       document.getElementById('totalSlidesNum').innerText = slides.length;
     }
 
-    // RENDERIZADO DEL CANVAS EN EDICIÓN Y EDICIÓN POSTERIOR DE ELEMENTOS
+    // RENDERIZADO Y LÍNEAS DE GUÍA (SNAP-TO-GRID)
     function renderCurrentSlide() {
       const canvas = document.getElementById('slideCanvas');
+      // Limpiar elementos manteniendo las líneas snap
+      const snapV = document.getElementById('snapV');
+      const snapH = document.getElementById('snapH');
       canvas.innerHTML = '';
+      canvas.appendChild(snapV);
+      canvas.appendChild(snapH);
+
       const slide = slides[currentSlideIdx];
       canvas.style.backgroundColor = slide.bg || '#0a0a0a';
+      document.getElementById('speakerNotesInput').value = slide.notes || '';
 
       slide.elements.forEach(el => {
         const elemDiv = document.createElement('div');
         elemDiv.className = `slide-element ${el.id === selectedElementId ? 'selected' : ''}`;
-        if (el.type === 'card') elemDiv.classList.add('element-card');
         
+        if (el.type === 'card') elemDiv.classList.add('element-card');
+        if (el.type === 'line') elemDiv.classList.add('element-line');
+        if (el.type === 'frame') elemDiv.classList.add('element-shape-frame');
+
         elemDiv.style.left = el.x + 'px';
         elemDiv.style.top = el.y + 'px';
         elemDiv.style.fontSize = el.fontSize || '16px';
         elemDiv.style.color = el.color || 'var(--text)';
         elemDiv.style.fontWeight = el.fontWeight || 'normal';
         elemDiv.style.textAlign = el.textAlign || 'left';
+        elemDiv.style.zIndex = el.zIndex || 1;
         if (el.width) elemDiv.style.width = el.width + 'px';
 
         if (el.type === 'image') {
@@ -673,33 +748,85 @@
           elemDiv.innerHTML = `<img src="${el.content}" alt="Image">`;
         } else {
           elemDiv.innerText = el.content;
-          elemDiv.contentEditable = true;
-          
-          // Permite la edición posterior al insertarlo
-          elemDiv.oninput = (e) => { 
-            el.content = e.target.innerText; 
-            renderSlidesNav(); 
-            saveProject(); 
-          };
-          
-          elemDiv.onblur = () => {
-            saveProject();
-          };
+          if (el.type !== 'line') elemDiv.contentEditable = true;
+          elemDiv.oninput = (e) => { el.content = e.target.innerText; renderSlidesNav(); saveProject(); };
         }
 
-        elemDiv.onclick = (e) => { 
-          e.stopPropagation(); 
-          selectElement(el.id); 
-        };
-
-        makeDraggable(elemDiv, el);
+        elemDiv.onclick = (e) => { e.stopPropagation(); selectElement(el.id); };
+        makeDraggableWithSnap(elemDiv, el);
         canvas.appendChild(elemDiv);
       });
 
       canvas.onclick = () => { selectedElementId = null; renderCurrentSlide(); };
     }
 
-    // SELECCIÓN Y ACTUALIZACIÓN EN BARRA DE HERRAMIENTAS
+    // DRAG & DROP CON IMANTADO (SNAP-TO-GRID)
+    function makeDraggableWithSnap(element, elData) {
+      let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+      const snapV = document.getElementById('snapV');
+      const snapH = document.getElementById('snapH');
+
+      element.onmousedown = (e) => {
+        if (document.activeElement === element && element.isContentEditable) return;
+        e.preventDefault();
+        mouseX = e.clientX; mouseY = e.clientY;
+
+        document.onmousemove = (e) => {
+          posX = mouseX - e.clientX; posY = mouseY - e.clientY;
+          mouseX = e.clientX; mouseY = e.clientY;
+
+          let newX = element.offsetLeft - posX;
+          let newY = element.offsetTop - posY;
+
+          // Centro del lienzo 720x405
+          const canvasCenterX = 360;
+          const canvasCenterY = 202;
+          const elemCenterX = newX + (element.offsetWidth / 2);
+          const elemCenterY = newY + (element.offsetHeight / 2);
+
+          // Imantado vertical (Centro)
+          if (Math.abs(elemCenterX - canvasCenterX) < 8) {
+            newX = canvasCenterX - (element.offsetWidth / 2);
+            snapV.style.left = canvasCenterX + 'px';
+            snapV.style.display = 'block';
+          } else {
+            snapV.style.display = 'none';
+          }
+
+          // Imantado horizontal (Centro)
+          if (Math.abs(elemCenterY - canvasCenterY) < 8) {
+            newY = canvasCenterY - (element.offsetHeight / 2);
+            snapH.style.top = canvasCenterY + 'px';
+            snapH.style.display = 'block';
+          } else {
+            snapH.style.display = 'none';
+          }
+
+          elData.x = newX; elData.y = newY;
+          element.style.left = newX + "px";
+          element.style.top = newY + "px";
+        };
+
+        document.onmouseup = () => {
+          document.onmousemove = null; document.onmouseup = null;
+          snapV.style.display = 'none'; snapH.style.display = 'none';
+          saveProject();
+        };
+      };
+    }
+
+    // CAPAS / Z-INDEX
+    function changeZIndex(delta) {
+      if (!selectedElementId) return;
+      const slide = slides[currentSlideIdx];
+      const el = slide.elements.find(item => item.id === selectedElementId);
+      if (el) {
+        el.zIndex = (el.zIndex || 1) + delta;
+        renderCurrentSlide();
+        saveProject();
+      }
+    }
+
     function selectElement(id) {
       selectedElementId = id;
       const slide = slides[currentSlideIdx];
@@ -715,22 +842,14 @@
       if (!selectedElementId) return;
       const slide = slides[currentSlideIdx];
       const el = slide.elements.find(item => item.id === selectedElementId);
-      if (el) {
-        el[prop] = val;
-        renderCurrentSlide();
-        saveProject();
-      }
+      if (el) { el[prop] = val; renderCurrentSlide(); saveProject(); }
     }
 
     function toggleBoldSelectedElement() {
       if (!selectedElementId) return;
       const slide = slides[currentSlideIdx];
       const el = slide.elements.find(item => item.id === selectedElementId);
-      if (el) {
-        el.fontWeight = (el.fontWeight === 'bold') ? 'normal' : 'bold';
-        renderCurrentSlide();
-        saveProject();
-      }
+      if (el) { el.fontWeight = (el.fontWeight === 'bold') ? 'normal' : 'bold'; renderCurrentSlide(); saveProject(); }
     }
 
     function deleteSelectedElement() {
@@ -745,16 +864,19 @@
     function addElement(type) {
       const slide = slides[currentSlideIdx];
       const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66';
-      const newEl = {
+      
+      let newEl = {
         id: 'el_' + Date.now(),
         type: type,
-        content: type === 'title' ? 'TÍTULO NUEVO' : (type === 'card' ? 'Texto de Tarjeta Cyber' : 'Texto borrador...'),
-        x: 80, y: 80 + (slide.elements.length * 25),
+        content: type === 'title' ? 'TÍTULO NUEVO' : (type === 'card' ? 'Texto Cyber' : (type === 'arrow' ? '➔ TEXTO CON FLECHA' : 'Texto borrador...')),
+        x: 80, y: 80 + (slide.elements.length * 20),
         fontSize: type === 'title' ? '28px' : '15px',
-        color: type === 'title' ? accent : '#ffffff',
+        color: type === 'title' || type === 'line' ? accent : '#ffffff',
         fontWeight: type === 'title' ? 'bold' : 'normal',
-        textAlign: 'left', width: 400
+        textAlign: 'left', width: type === 'line' ? 300 : 400, zIndex: slide.elements.length + 1
       };
+
+      if (type === 'line') newEl.content = '';
       slide.elements.push(newEl);
       selectElement(newEl.id);
       saveProject();
@@ -764,49 +886,15 @@
       const url = document.getElementById('imageUrlInput').value;
       if (!url) return;
       const slide = slides[currentSlideIdx];
-      slide.elements.push({
-        id: 'el_' + Date.now(),
-        type: 'image', content: url,
-        x: 100, y: 80, width: 250
-      });
+      slide.elements.push({ id: 'el_' + Date.now(), type: 'image', content: url, x: 100, y: 80, width: 250, zIndex: 10 });
       closeModal('imageModal');
       renderCurrentSlide();
       saveProject();
     }
 
-    // ARRASTRE LIBRE (DRAG & DROP)
-    function makeDraggable(element, elData) {
-      let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
-      element.onmousedown = (e) => {
-        if (document.activeElement === element && element.isContentEditable) return;
-        e.preventDefault();
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        document.onmousemove = (e) => {
-          posX = mouseX - e.clientX;
-          posY = mouseY - e.clientY;
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-          elData.x = element.offsetLeft - posX;
-          elData.y = element.offsetTop - posY;
-          element.style.left = elData.x + "px";
-          element.style.top = elData.y + "px";
-        };
-        document.onmouseup = () => {
-          document.onmousemove = null;
-          document.onmouseup = null;
-          saveProject();
-        };
-      };
-    }
-
-    // EXPORTACIÓN A POWERPOINT (.PPTX)
+    // EXPORTAR A POWERPOINT
     function exportPPTX() {
-      if (typeof PptxGenJS === 'undefined') {
-        alert("Cargando la librería de PowerPoint. Por favor reintenta en un momento...");
-        return;
-      }
-
+      if (typeof PptxGenJS === 'undefined') return alert("Cargando librería PPTX...");
       let pptx = new PptxGenJS();
       pptx.layout = 'LAYOUT_16x9';
 
@@ -823,32 +911,13 @@
           let textColor = (el.color || '#ffffff').replace('#', '');
 
           if (el.type === 'image') {
-            slide.addImage({
-              path: el.content,
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: wIn * 0.5625
-            });
+            slide.addImage({ path: el.content, x: xIn, y: yIn, w: wIn, h: wIn * 0.5625 });
           } else {
-            let opts = {
-              x: xIn,
-              y: yIn,
-              w: wIn,
-              h: 1.2,
-              fontSize: fontPt,
-              color: textColor,
-              bold: el.fontWeight === 'bold',
-              align: el.textAlign || 'left',
-              valign: 'top'
-            };
-
-            if (el.type === 'card') {
+            let opts = { x: xIn, y: yIn, w: wIn, h: 1.2, fontSize: fontPt, color: textColor, bold: el.fontWeight === 'bold', align: el.textAlign || 'left' };
+            if (el.type === 'card' || el.type === 'frame') {
               let accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().replace('#', '') || '00FF66';
-              opts.fill = { color: '000000' };
-              opts.line = { color: accentHex, width: 2 };
+              opts.fill = { color: '000000' }; opts.line = { color: accentHex, width: 2 };
             }
-
             slide.addText(el.content, opts);
           }
         });
@@ -857,7 +926,7 @@
       pptx.writeFile({ fileName: 'meow_slides_presentacion.pptx' });
     }
 
-    // MODO PRESENTACIÓN CON ESCALADO ADAPTATIVO
+    // PRESENTACIÓN CON TRANSICIONES
     function startPresentation() {
       isPresenting = true;
       document.getElementById('presentationOverlay').classList.add('active');
@@ -872,29 +941,30 @@
     function renderPresentationSlide() {
       const pCanvas = document.getElementById('presentationCanvas');
       pCanvas.innerHTML = '';
+      
+      // Aplicar clase de animación
+      pCanvas.className = `presentation-slide trans-${currentTransition}`;
+
       const slide = slides[currentSlideIdx];
       pCanvas.style.backgroundColor = slide.bg || '#0a0a0a';
-
-      // Factor de escala basado en el ancho real del contenedor de presentación frente al estándar (720px)
       const scale = pCanvas.clientWidth / 720;
 
       slide.elements.forEach(el => {
         const elemDiv = document.createElement('div');
-        elemDiv.className = `slide-element ${el.type === 'card' ? 'element-card' : ''}`;
+        elemDiv.className = `slide-element ${el.type === 'card' ? 'element-card' : ''} ${el.type === 'line' ? 'element-line' : ''} ${el.type === 'frame' ? 'element-shape-frame' : ''}`;
         elemDiv.style.left = (el.x * scale) + 'px';
         elemDiv.style.top = (el.y * scale) + 'px';
         elemDiv.style.fontSize = (parseInt(el.fontSize) * scale) + 'px';
         elemDiv.style.color = el.color || 'var(--text)';
         elemDiv.style.fontWeight = el.fontWeight || 'normal';
         elemDiv.style.textAlign = el.textAlign || 'left';
+        elemDiv.style.zIndex = el.zIndex || 1;
         if (el.width) elemDiv.style.width = (el.width * scale) + 'px';
 
         if (el.type === 'image') {
           elemDiv.classList.add('element-image');
           elemDiv.innerHTML = `<img src="${el.content}" alt="Image">`;
-        } else {
-          elemDiv.innerText = el.content;
-        }
+        } else { elemDiv.innerText = el.content; }
         pCanvas.appendChild(elemDiv);
       });
     }
@@ -913,25 +983,43 @@
       }
     }
 
+    // ATAJOS DE TECLADO Y COPIAR/PEGAR
     function setupKeyboard() {
       document.addEventListener('keydown', (e) => {
         if (isPresenting) {
           if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
           if (e.key === 'ArrowLeft') prevSlide();
           if (e.key === 'Escape') endPresentation();
+          return;
         }
+
+        if (document.activeElement.isContentEditable || document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+        if (e.ctrlKey && e.key === 'c') {
+          if (selectedElementId) {
+            const el = slides[currentSlideIdx].elements.find(i => i.id === selectedElementId);
+            if (el) copiedElement = JSON.parse(JSON.stringify(el));
+          }
+        }
+
+        if (e.ctrlKey && e.key === 'v') {
+          if (copiedElement) {
+            const clone = JSON.parse(JSON.stringify(copiedElement));
+            clone.id = 'el_' + Date.now();
+            clone.x += 20; clone.y += 20;
+            slides[currentSlideIdx].elements.push(clone);
+            selectElement(clone.id);
+            saveProject();
+          }
+        }
+
+        if (e.key === 'Delete') deleteSelectedElement();
       });
 
-      window.addEventListener('resize', () => {
-        if (isPresenting) renderPresentationSlide();
-      });
+      window.addEventListener('resize', () => { if (isPresenting) renderPresentationSlide(); });
     }
 
-    // ALMACENAMIENTO Y EXPORTACIÓN JSON
-    function saveProject() {
-      localStorage.setItem('meow_slides_data', JSON.stringify(slides));
-    }
-
+    function saveProject() { localStorage.setItem('meow_slides_data', JSON.stringify(slides)); }
     function loadFromStorage() {
       const data = localStorage.getItem('meow_slides_data');
       const accent = localStorage.getItem('meow_slides_accent');
@@ -941,28 +1029,20 @@
 
     function exportJSON() {
       const blob = new Blob([JSON.stringify(slides, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'meow_slides_presentation.json';
-      a.click();
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'meow_slides_presentation.json'; a.click();
     }
 
     function confirmImportJSON() {
       try {
-        const jsonStr = document.getElementById('importJsonInput').value;
-        slides = JSON.parse(jsonStr);
-        currentSlideIdx = 0;
-        renderSlidesNav();
-        renderCurrentSlide();
-        closeModal('importModal');
-        saveProject();
-      } catch (err) { alert('Formato JSON no válido.'); }
+        slides = JSON.parse(document.getElementById('importJsonInput').value);
+        currentSlideIdx = 0; renderSlidesNav(); renderCurrentSlide(); closeModal('importModal'); saveProject();
+      } catch (err) { alert('JSON inválido'); }
     }
 
     function openModal(id) { document.getElementById(id).style.display = 'block'; }
     function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
-    // INICIAR APLICACIÓN
     init();
   </script>
 </body>
