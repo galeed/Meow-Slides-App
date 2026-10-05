@@ -10,6 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
 
+  <!-- Librería externa para generación real de archivos PowerPoint (.pptx) -->
+  <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+
   <style>
     :root {
       --bg: #050505;
@@ -156,58 +159,60 @@
       font-family: inherit; text-align: center;
     }
 
-    /* WORKSPACE PRINCIPAL */
+    /* WORKSPACE PRINCIPAL REORGANIZADO VERTICALMENTE */
     .workspace {
-      display: flex; flex: 1; overflow: hidden; position: relative;
+      display: flex; flex-direction: column; flex: 1; overflow: hidden; position: relative;
     }
 
-    /* NAVEGADOR IZQUIERDO DE SLIDES */
+    /* ÁREA SUPERIOR: LIENZO EN EDICIÓN */
+    .editor-container {
+      flex: 1; background: var(--bg); display: flex; justify-content: center;
+      align-items: center; padding: 16px; overflow: auto; position: relative;
+    }
+
+    .slide-canvas {
+      width: 720px; height: 405px; background: var(--slide-bg);
+      border: var(--border-thick) solid var(--border); position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden; flex-shrink: 0;
+    }
+
+    /* ÁREA INFERIOR: TIRA HORIZONTAL DE DIAPOSITIVAS */
     .slides-nav {
-      width: 200px; border-right: var(--border-thick) solid var(--border);
-      background: var(--app-bg); display: flex; flex-direction: column; flex-shrink: 0;
+      height: 125px; border-top: var(--border-thick) solid var(--border);
+      background: var(--app-bg); display: flex; align-items: center; flex-shrink: 0;
+      padding: 8px 12px; gap: 12px; overflow-x: auto;
     }
 
     .slides-nav-header {
-      padding: 8px; border-bottom: var(--border-thin) solid var(--border);
-      display: flex; justify-content: space-between; align-items: center;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      gap: 6px; padding-right: 12px; border-right: var(--border-thin) solid var(--border); height: 100%;
     }
 
-    .slides-nav-title { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1px; color: var(--subtext); }
+    .slides-nav-title { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; color: var(--subtext); text-align: center; }
 
     .slides-list {
-      flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 10px;
+      display: flex; flex-direction: row; align-items: center; gap: 12px;
+      flex: 1; overflow-x: auto; height: 100%; padding-bottom: 2px;
     }
 
     .slide-thumb {
-      border: var(--border-thin) solid var(--border); background: var(--slide-bg);
-      aspect-ratio: 16/9; cursor: pointer; position: relative; display: flex;
+      height: 85px; aspect-ratio: 16/9; border: var(--border-thin) solid var(--border);
+      background: var(--slide-bg); cursor: pointer; position: relative; display: flex;
       flex-direction: column; justify-content: center; align-items: center;
-      padding: 6px; transition: 0.2s; user-select: none;
+      padding: 6px; transition: 0.2s; user-select: none; flex-shrink: 0;
     }
     .slide-thumb:hover { border-color: var(--accent); }
     .slide-thumb.active { border: 2px solid var(--accent); box-shadow: 0 0 8px var(--accent); }
 
     .slide-thumb-number {
-      position: absolute; top: 4px; left: 4px; font-size: 9px;
-      background: rgba(0,0,0,0.7); color: var(--accent); padding: 1px 4px;
+      position: absolute; top: 3px; left: 3px; font-size: 8px;
+      background: rgba(0,0,0,0.8); color: var(--accent); padding: 1px 3px;
       font-weight: bold; border: 1px solid var(--accent);
     }
 
     .slide-thumb-preview {
-      font-size: 9px; color: var(--subtext); text-align: center; overflow: hidden;
-      max-height: 100%; word-break: break-all;
-    }
-
-    /* ÁREA DEL EDITOR DE DIAPOSITIVA */
-    .editor-container {
-      flex: 1; background: var(--bg); display: flex; justify-content: center;
-      align-items: center; padding: 20px; overflow: auto; position: relative;
-    }
-
-    .slide-canvas {
-      width: 800px; height: 450px; background: var(--slide-bg);
-      border: var(--border-thick) solid var(--border); position: relative;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden;
+      font-size: 8px; color: var(--subtext); text-align: center; overflow: hidden;
+      max-height: 100%; word-break: break-all; padding: 2px;
     }
 
     /* ELEMENTOS DENTRO DE LA DIAPOSITIVA */
@@ -217,10 +222,7 @@
       min-width: 40px; min-height: 20px;
     }
 
-    .slide-element.selected {
-      border: 1px dashed var(--accent) !important;
-    }
-
+    .slide-element.selected { border: 1px dashed var(--accent) !important; }
     .slide-element[contenteditable="true"] { cursor: text; }
 
     .element-card {
@@ -238,9 +240,7 @@
       flex-shrink: 0; padding: 0 6px 0 12px; height: 38px;
     }
 
-    .slide-status {
-      font-size: 11px; color: var(--subtext); font-weight: 600;
-    }
+    .slide-status { font-size: 11px; color: var(--subtext); font-weight: 600; }
     .slide-status span { color: var(--accent); }
 
     /* BOTÓN EXPORTAR INTEGRADO DENTRO DE MARGEN */
@@ -297,7 +297,6 @@
     .modal-btn:hover { background: var(--text); color: var(--app-bg); }
     .tool-input { background: var(--app-bg); color: var(--text); border: var(--border-thin) solid var(--border); padding: 6px; font-size: 11px; outline: none; font-family: inherit; width: 100%; }
 
-    /* IMPRESIÓN / PDF */
     @media print {
       body { padding: 0; background: #fff; color: #000; }
       .app-frame { border: none; max-width: 100%; height: auto; }
@@ -339,7 +338,7 @@
         <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
       </div>
 
-      <!-- COLOR NEÓN -->
+      <!-- SECCIÓN COLOR NEÓN ACENTO CON MONOCROMÁTICO AÑADIDO -->
       <details>
         <summary>🌈 Color Neón Acento</summary>
         <div class="menu-group">
@@ -357,6 +356,9 @@
           </button>
           <button class="menu-action" onclick="changeAccentColor('#ffb000')">
             <span class="color-dot" style="background:#ffb000;"></span> Ámbar Neón
+          </button>
+          <button class="menu-action" onclick="changeAccentColor('#ffffff')">
+            <span class="color-dot" style="background:#ffffff; border: 1px solid #888;"></span> Monocromo
           </button>
           
           <div class="color-picker-row" style="margin-top:4px;">
@@ -396,6 +398,7 @@
         <summary>📁 Archivo & Proyectos</summary>
         <div class="menu-group">
           <button class="menu-action" onclick="saveProject(); toggleSidebar()">💾 Guardar Avance (Local)</button>
+          <button class="menu-action" onclick="exportPPTX(); toggleSidebar()">📊 Exportar PowerPoint (.PPTX)</button>
           <button class="menu-action" onclick="exportJSON(); toggleSidebar()">📥 Descargar Proyecto (.JSON)</button>
           <button class="menu-action" onclick="openModal('importModal'); toggleSidebar()">📤 Cargar Proyecto (.JSON)</button>
           <button class="menu-action" onclick="window.print(); toggleSidebar()">🖨️ Imprimir / Guardar PDF</button>
@@ -426,10 +429,15 @@
       <button class="tool-btn" style="color:#ff4444;" onclick="deleteSelectedElement()">🗑️ Eliminar Elemento</button>
     </div>
 
-    <!-- WORKSPACE PRINCIPAL -->
+    <!-- WORKSPACE REORGANIZADO -->
     <div class="workspace">
       
-      <!-- NAV LATERAL DE SLIDES -->
+      <!-- LIENZO / DIAPOSITIVA EN EDICIÓN (ARRIBA) -->
+      <div class="editor-container" id="editorContainer">
+        <div class="slide-canvas" id="slideCanvas"></div>
+      </div>
+
+      <!-- NAV DE SLIDES HORIZONTAL (ABAJO) -->
       <div class="slides-nav">
         <div class="slides-nav-header">
           <span class="slides-nav-title">SLIDES</span>
@@ -438,24 +446,19 @@
         <div class="slides-list" id="slidesList"></div>
       </div>
 
-      <!-- EDITOR DE SLIDE CANVAS -->
-      <div class="editor-container" id="editorContainer">
-        <div class="slide-canvas" id="slideCanvas"></div>
-      </div>
-
     </div>
 
-    <!-- BARRA INFERIOR DE ESTADO Y EXPORTACIÓN INTEGRADA -->
+    <!-- BARRA INFERIOR DE ESTADO Y EXPORTACIÓN A POWERPOINT -->
     <div class="sheet-footer">
       <div class="slide-status" id="slideStatus">
         DIAPOSITIVA <span id="currentSlideNum">1</span> DE <span id="totalSlidesNum">1</span>
       </div>
 
-      <!-- BOTÓN EXPORTAR INTEGRADO EN EL MARGEN -->
-      <div class="export-integrated-btn" onclick="window.print()" title="Exportar o Imprimir a PDF">
+      <!-- BOTÓN DE EXPORTAR POWERPOINT INTEGRADO -->
+      <div class="export-integrated-btn" onclick="exportPPTX()" title="Exportar Presentación a PowerPoint (.pptx)">
         <div class="export-btn-prefix">&rarr;</div>
         <div class="export-btn-main">
-          EXPORTAR PDF <span class="arrow-up">&#9650;</span>
+          EXPORTAR PPTX <span class="arrow-up">&#9650;</span>
         </div>
       </div>
     </div>
@@ -493,9 +496,9 @@
         id: 1,
         bg: '#0a0a0a',
         elements: [
-          { id: 'el_1', type: 'title', content: 'MEOW SLIDES APP', x: 80, y: 120, fontSize: '48px', color: '#00ff66', fontWeight: 'bold', textAlign: 'left', width: 640 },
-          { id: 'el_2', type: 'text', content: 'Sistema de Presentaciones Cyberpunk v1.0', x: 80, y: 200, fontSize: '20px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 640 },
-          { id: 'el_3', type: 'card', content: '💡 CONSEJO: Haz clic en cualquier elemento para editarlo o moverlo libremente.', x: 80, y: 280, fontSize: '14px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 500 }
+          { id: 'el_1', type: 'title', content: 'MEOW SLIDES APP', x: 60, y: 100, fontSize: '42px', color: '#00ff66', fontWeight: 'bold', textAlign: 'left', width: 600 },
+          { id: 'el_2', type: 'text', content: 'Sistema de Presentaciones Cyberpunk v2.0', x: 60, y: 180, fontSize: '18px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 600 },
+          { id: 'el_3', type: 'card', content: '💡 CONSEJO: Haz clic en cualquier elemento para moverlo o editarlo libremente.', x: 60, y: 250, fontSize: '13px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 480 }
         ]
       }
     ];
@@ -532,7 +535,7 @@
         id: Date.now(),
         bg: '#0a0a0a',
         elements: [
-          { id: 'el_' + Date.now(), type: 'title', content: 'NUEVA DIAPOSITIVA', x: 80, y: 180, fontSize: '36px', color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66', fontWeight: 'bold', textAlign: 'center', width: 640 }
+          { id: 'el_' + Date.now(), type: 'title', content: 'NUEVA DIAPOSITIVA', x: 60, y: 150, fontSize: '32px', color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66', fontWeight: 'bold', textAlign: 'center', width: 600 }
         ]
       };
       slides.push(newSlide);
@@ -590,7 +593,7 @@
       saveProject();
     }
 
-    // RENDERIZADO DE LA LISTA DE SLIDES
+    // RENDERIZADO HORIZONTAL DE SLIDES (TIRA INFERIOR)
     function renderSlidesNav() {
       const list = document.getElementById('slidesList');
       list.innerHTML = '';
@@ -606,16 +609,16 @@
         const preview = document.createElement('div');
         preview.className = 'slide-thumb-preview';
         const titleEl = slide.elements.find(e => e.type === 'title' || e.type === 'text');
-        preview.innerText = titleEl ? titleEl.content.substring(0, 30) : 'Diapositiva ' + (idx + 1);
+        preview.innerText = titleEl ? titleEl.content.substring(0, 20) : 'Slide ' + (idx + 1);
 
-        // BOTONES DE CONTROL DE THUMBNAIL
+        // BOTONES DE CONTROL EN CADA THUMBNAIL
         const ctrl = document.createElement('div');
         ctrl.style.cssText = "position:absolute; bottom:2px; right:2px; display:flex; gap:2px;";
         ctrl.innerHTML = `
-          <button style="background:#000; color:#fff; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="moveSlide(${idx}, -1, event)">▲</button>
-          <button style="background:#000; color:#fff; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="moveSlide(${idx}, 1, event)">▼</button>
-          <button style="background:#000; color:#fff; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="duplicateSlide(${idx}, event)">📋</button>
-          <button style="background:#000; color:#ff4444; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="deleteSlide(${idx}, event)">✕</button>
+          <button style="background:#000; color:#fff; border:1px solid #555; font-size:7px; cursor:pointer;" onclick="moveSlide(${idx}, -1, event)">◄</button>
+          <button style="background:#000; color:#fff; border:1px solid #555; font-size:7px; cursor:pointer;" onclick="moveSlide(${idx}, 1, event)">►</button>
+          <button style="background:#000; color:#fff; border:1px solid #555; font-size:7px; cursor:pointer;" onclick="duplicateSlide(${idx}, event)">📋</button>
+          <button style="background:#000; color:#ff4444; border:1px solid #555; font-size:7px; cursor:pointer;" onclick="deleteSlide(${idx}, event)">✕</button>
         `;
 
         thumb.appendChild(num);
@@ -628,7 +631,7 @@
       document.getElementById('totalSlidesNum').innerText = slides.length;
     }
 
-    // RENDERIZADO DEL CANVAS ACTUAL
+    // RENDERIZADO DEL CANVAS EN EDICIÓN
     function renderCurrentSlide() {
       const canvas = document.getElementById('slideCanvas');
       canvas.innerHTML = '';
@@ -704,8 +707,8 @@
         id: 'el_' + Date.now(),
         type: type,
         content: type === 'title' ? 'TÍTULO NUEVO' : (type === 'card' ? 'Texto de Tarjeta Cyber' : 'Texto borrador...'),
-        x: 100, y: 100 + (slide.elements.length * 30),
-        fontSize: type === 'title' ? '32px' : '16px',
+        x: 80, y: 80 + (slide.elements.length * 25),
+        fontSize: type === 'title' ? '28px' : '15px',
         color: type === 'title' ? getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() : '#ffffff',
         fontWeight: type === 'title' ? 'bold' : 'normal',
         textAlign: 'left', width: 400
@@ -723,7 +726,7 @@
       slide.elements.push({
         id: 'el_' + Date.now(),
         type: 'image', content: url,
-        x: 150, y: 100, width: 300
+        x: 100, y: 80, width: 250
       });
       closeModal('imageModal');
       renderCurrentSlide();
@@ -756,6 +759,64 @@
       };
     }
 
+    // EXPORTACIÓN A POWERPOINT (.PPTX)
+    function exportPPTX() {
+      if (typeof PptxGenJS === 'undefined') {
+        alert("Cargando la librería de PowerPoint. Por favor reintenta en un momento...");
+        return;
+      }
+
+      let pptx = new PptxGenJS();
+      pptx.layout = 'LAYOUT_16x9';
+
+      slides.forEach((slideData) => {
+        let slide = pptx.addSlide();
+        let bgHex = (slideData.bg || '#0a0a0a').replace('#', '');
+        slide.background = { color: bgHex };
+
+        slideData.elements.forEach(el => {
+          // Conversión de coordenadas de Canvas (720x405) a pulgadas 16:9 (10 x 5.625)
+          let xIn = (el.x / 720) * 10;
+          let yIn = (el.y / 405) * 5.625;
+          let wIn = ((el.width || 400) / 720) * 10;
+          let fontPt = parseInt(el.fontSize) || 16;
+          let textColor = (el.color || '#ffffff').replace('#', '');
+
+          if (el.type === 'image') {
+            slide.addImage({
+              path: el.content,
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: wIn * 0.5625
+            });
+          } else {
+            let opts = {
+              x: xIn,
+              y: yIn,
+              w: wIn,
+              h: 1.2,
+              fontSize: fontPt,
+              color: textColor,
+              bold: el.fontWeight === 'bold',
+              align: el.textAlign || 'left',
+              valign: 'top'
+            };
+
+            if (el.type === 'card') {
+              let accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim().replace('#', '') || '00FF66';
+              opts.fill = { color: '000000' };
+              opts.line = { color: accentHex, width: 2 };
+            }
+
+            slide.addText(el.content, opts);
+          }
+        });
+      });
+
+      pptx.writeFile({ fileName: 'meow_slides_presentacion.pptx' });
+    }
+
     // MODO PRESENTACIÓN
     function startPresentation() {
       isPresenting = true;
@@ -777,13 +838,13 @@
       slide.elements.forEach(el => {
         const elemDiv = document.createElement('div');
         elemDiv.className = `slide-element ${el.type === 'card' ? 'element-card' : ''}`;
-        elemDiv.style.left = (el.x * 1.5) + 'px'; // Escalar proporcionalmente
-        elemDiv.style.top = (el.y * 1.5) + 'px';
+        elemDiv.style.left = (el.x * 1.6) + 'px';
+        elemDiv.style.top = (el.y * 1.6) + 'px';
         elemDiv.style.fontSize = (parseInt(el.fontSize) * 1.4) + 'px';
         elemDiv.style.color = el.color || 'var(--text)';
         elemDiv.style.fontWeight = el.fontWeight || 'normal';
         elemDiv.style.textAlign = el.textAlign || 'left';
-        if (el.width) elemDiv.style.width = (el.width * 1.5) + 'px';
+        if (el.width) elemDiv.style.width = (el.width * 1.6) + 'px';
 
         if (el.type === 'image') {
           elemDiv.classList.add('element-image');
@@ -819,7 +880,7 @@
       });
     }
 
-    // ALMACENAMIENTO Y EXPORTACIÓN
+    // ALMACENAMIENTO Y EXPORTACIÓN JSON
     function saveProject() {
       localStorage.setItem('meow_slides_data', JSON.stringify(slides));
     }
