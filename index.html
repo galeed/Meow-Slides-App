@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Meow Slides App - Cyberpunk Presentation Builder</title>
+
+  <!-- Tipografías -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Source+Code+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #050505;
+      --app-bg: #000000;
+      --text: #ffffff;
+      --border: #ffffff;
+      --subtext: #888888;
+      --grid-line: #222222;
+      --cell-bg: #000000;
+      --cell-active: #111111;
+      --accent: #00ff66; /* Color de acento dinámico */
+      --border-thick: 2px;
+      --border-thin: 1px;
+      --slide-bg: #0a0a0a;
+    }
+
+    body.light-mode {
+      --bg: #f0f0f0;
+      --app-bg: #ffffff;
+      --text: #000000;
+      --border: #000000;
+      --subtext: #666666;
+      --grid-line: #e0e0e0;
+      --cell-bg: #ffffff;
+      --cell-active: #f5f5f5;
+      --slide-bg: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100vh; height: 100dvh; overflow: hidden; background-color: var(--bg); color: var(--text); font-family: 'Source Code Pro', monospace; }
+    body { padding: 8px; display: flex; justify-content: center; align-items: center; }
+
+    .app-frame {
+      width: 100%; max-width: 1300px; height: 100%; max-height: calc(100dvh - 16px);
+      display: flex; flex-direction: column; background-color: var(--app-bg);
+      border: 3px solid var(--border); overflow: hidden; position: relative;
+    }
+
+    /* CABECERA */
+    header {
+      display: grid; grid-template-columns: 44px 1fr auto 44px;
+      border-bottom: var(--border-thick) solid var(--border); align-items: stretch; flex-shrink: 0;
+    }
+
+    .header-btn {
+      background: transparent; color: var(--text); border: none;
+      padding: 8px; font-size: 11px; letter-spacing: 1px; cursor: pointer; text-transform: uppercase;
+      display: flex; align-items: center; justify-content: center;
+      font-family: inherit;
+    }
+
+    .header-btn.bordered { border-right: var(--border-thick) solid var(--border); }
+    .header-btn.bordered-left { border-left: var(--border-thick) solid var(--border); }
+    .header-btn:hover { background: var(--text); color: var(--app-bg); }
+
+    .brand-title {
+      font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 2px;
+      text-transform: uppercase; text-align: center; padding: 8px 0; font-weight: 700;
+      color: var(--text); display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .header-actions {
+      display: flex; align-items: center; border-left: var(--border-thick) solid var(--border);
+    }
+
+    .present-btn {
+      background: var(--accent); color: #000000; font-family: 'Oswald', sans-serif;
+      font-weight: 700; border: none; padding: 0 16px; height: 100%; cursor: pointer;
+      font-size: 13px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;
+      transition: opacity 0.2s;
+    }
+    .present-btn:hover { opacity: 0.85; }
+
+    /* MENÚ LATERAL (SIDEBAR DE HERRAMIENTAS) */
+    .sidebar-overlay {
+      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); z-index: 199;
+    }
+    .sidebar-overlay.show { display: block; }
+
+    .sidebar {
+      position: absolute; top: 0; left: -300px; width: 280px; height: 100%;
+      background: var(--app-bg); border-right: var(--border-thick) solid var(--border);
+      z-index: 200; transition: left 0.3s ease; display: flex; flex-direction: column;
+      box-shadow: 5px 0 15px rgba(0,0,0,0.8); overflow-y: auto;
+    }
+    .sidebar.open { left: 0; }
+
+    .sidebar-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px; border-bottom: var(--border-thick) solid var(--border);
+      font-family: 'Oswald', sans-serif; font-weight: bold; font-size: 14px; letter-spacing: 1px;
+    }
+
+    .sidebar-close {
+      background: none; border: none; color: var(--text); font-size: 18px; cursor: pointer;
+    }
+
+    details { border-bottom: var(--border-thin) solid var(--border); }
+    summary {
+      padding: 12px; font-size: 12px; font-family: 'Oswald', sans-serif; text-transform: uppercase;
+      cursor: pointer; list-style: none; display: flex; justify-content: space-between;
+      color: var(--accent); font-weight: bold; letter-spacing: 1px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary:after { content: "▼"; font-size: 10px; color: var(--text); }
+    details[open] summary:after { content: "▲"; }
+
+    .menu-group {
+      display: flex; flex-direction: column; background: var(--cell-bg);
+      padding: 8px 12px; gap: 8px;
+    }
+
+    .menu-action {
+      background: var(--app-bg); color: var(--text); border: var(--border-thin) solid var(--border);
+      padding: 6px 10px; font-size: 11px; cursor: pointer; text-transform: uppercase;
+      font-family: 'Source Code Pro', monospace; text-align: left; transition: 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .menu-action:hover { background: var(--text); color: var(--app-bg); }
+
+    .color-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+    .color-picker-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; }
+    .color-picker-row input[type="color"] { width: 40px; height: 24px; padding: 0; border: 1px solid var(--border); cursor: pointer; }
+
+    /* BARRA DE EDICIÓN RÁPIDA SUPERIOR */
+    .toolbar-formatting {
+      display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+      border-bottom: var(--border-thick) solid var(--border); background: var(--app-bg);
+      overflow-x: auto; flex-shrink: 0;
+    }
+
+    .tool-btn {
+      background: var(--app-bg); color: var(--text); border: var(--border-thin) solid var(--border);
+      padding: 4px 8px; font-size: 11px; cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    }
+    .tool-btn:hover { background: var(--text); color: var(--app-bg); }
+
+    .tool-input-num {
+      width: 50px; background: var(--app-bg); color: var(--text);
+      border: var(--border-thin) solid var(--border); padding: 3px 6px; font-size: 11px;
+      font-family: inherit; text-align: center;
+    }
+
+    /* WORKSPACE PRINCIPAL */
+    .workspace {
+      display: flex; flex: 1; overflow: hidden; position: relative;
+    }
+
+    /* NAVEGADOR IZQUIERDO DE SLIDES */
+    .slides-nav {
+      width: 200px; border-right: var(--border-thick) solid var(--border);
+      background: var(--app-bg); display: flex; flex-direction: column; flex-shrink: 0;
+    }
+
+    .slides-nav-header {
+      padding: 8px; border-bottom: var(--border-thin) solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .slides-nav-title { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1px; color: var(--subtext); }
+
+    .slides-list {
+      flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .slide-thumb {
+      border: var(--border-thin) solid var(--border); background: var(--slide-bg);
+      aspect-ratio: 16/9; cursor: pointer; position: relative; display: flex;
+      flex-direction: column; justify-content: center; align-items: center;
+      padding: 6px; transition: 0.2s; user-select: none;
+    }
+    .slide-thumb:hover { border-color: var(--accent); }
+    .slide-thumb.active { border: 2px solid var(--accent); box-shadow: 0 0 8px var(--accent); }
+
+    .slide-thumb-number {
+      position: absolute; top: 4px; left: 4px; font-size: 9px;
+      background: rgba(0,0,0,0.7); color: var(--accent); padding: 1px 4px;
+      font-weight: bold; border: 1px solid var(--accent);
+    }
+
+    .slide-thumb-preview {
+      font-size: 9px; color: var(--subtext); text-align: center; overflow: hidden;
+      max-height: 100%; word-break: break-all;
+    }
+
+    /* ÁREA DEL EDITOR DE DIAPOSITIVA */
+    .editor-container {
+      flex: 1; background: var(--bg); display: flex; justify-content: center;
+      align-items: center; padding: 20px; overflow: auto; position: relative;
+    }
+
+    .slide-canvas {
+      width: 800px; height: 450px; background: var(--slide-bg);
+      border: var(--border-thick) solid var(--border); position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8); overflow: hidden;
+    }
+
+    /* ELEMENTOS DENTRO DE LA DIAPOSITIVA */
+    .slide-element {
+      position: absolute; cursor: move; user-select: none;
+      border: 1px transparent dashed; padding: 4px; outline: none;
+      min-width: 40px; min-height: 20px;
+    }
+
+    .slide-element.selected {
+      border: 1px dashed var(--accent) !important;
+    }
+
+    .slide-element[contenteditable="true"] { cursor: text; }
+
+    .element-card {
+      background: #000000; border: 2px solid var(--accent);
+      padding: 12px; color: var(--text); border-radius: 0px;
+      box-shadow: 4px 4px 0px var(--accent);
+    }
+
+    .element-image img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+
+    /* FOOTER E INTEGRACIÓN DEL BOTÓN DE EXPORTACIÓN */
+    .sheet-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: var(--border-thick) solid var(--border); background: var(--app-bg);
+      flex-shrink: 0; padding: 0 6px 0 12px; height: 38px;
+    }
+
+    .slide-status {
+      font-size: 11px; color: var(--subtext); font-weight: 600;
+    }
+    .slide-status span { color: var(--accent); }
+
+    /* BOTÓN EXPORTAR INTEGRADO DENTRO DE MARGEN */
+    .export-integrated-btn {
+      display: inline-flex; align-items: stretch; background-color: #000000;
+      border: 1.5px solid var(--accent); cursor: pointer; user-select: none;
+      flex-shrink: 0; margin: 3px 0; transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .export-integrated-btn:hover { box-shadow: 0 0 8px var(--accent); }
+
+    .export-btn-prefix {
+      background-color: #000000; color: #ffffff; padding: 3px 8px;
+      font-family: monospace; font-size: 11px; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+      border-right: 1.5px solid var(--accent);
+    }
+
+    .export-btn-main {
+      background-color: #ffffff; color: #000000; padding: 3px 10px;
+      font-family: 'Oswald', sans-serif; font-weight: 700; font-size: 11px;
+      letter-spacing: 1px; display: flex; align-items: center; gap: 6px;
+    }
+
+    /* MODO PRESENTACIÓN PANTALLA COMPLETA */
+    .presentation-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000000; z-index: 9999; justify-content: center; align-items: center;
+    }
+
+    .presentation-overlay.active { display: flex; }
+
+    .presentation-slide {
+      width: 100vw; height: 56.25vw; max-height: 100vh; max-width: 177.77vh;
+      background: var(--slide-bg); position: relative; border: none;
+      box-shadow: 0 0 50px rgba(0,0,0,0.9); overflow: hidden;
+    }
+
+    .presentation-controls {
+      position: absolute; bottom: 12px; right: 12px; display: flex; gap: 8px;
+      opacity: 0.2; transition: opacity 0.3s; z-index: 10000;
+    }
+    .presentation-controls:hover { opacity: 1; }
+
+    /* MODAL */
+    .modal {
+      display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 90%; max-width: 450px; background: var(--app-bg); border: var(--border-thick) solid var(--border);
+      padding: 16px; z-index: 300; box-shadow: 0 0 20px rgba(0,0,0,0.9);
+    }
+    .modal-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: bold; font-size: 12px; color: var(--accent); }
+    .modal-close { background: none; color: var(--text); border: none; cursor: pointer; font-size: 14px; }
+    .modal-btn { background: var(--app-bg); color: var(--text); border: var(--border-thin) solid var(--border); padding: 8px; font-family: inherit; font-size: 11px; cursor: pointer; text-transform: uppercase; margin-top: 8px; width: 100%;}
+    .modal-btn:hover { background: var(--text); color: var(--app-bg); }
+    .tool-input { background: var(--app-bg); color: var(--text); border: var(--border-thin) solid var(--border); padding: 6px; font-size: 11px; outline: none; font-family: inherit; width: 100%; }
+
+    /* IMPRESIÓN / PDF */
+    @media print {
+      body { padding: 0; background: #fff; color: #000; }
+      .app-frame { border: none; max-width: 100%; height: auto; }
+      header, .toolbar-formatting, .slides-nav, .sheet-footer, .sidebar, .sidebar-overlay, .modal { display: none !important; }
+      .workspace { overflow: visible; display: block; }
+      .editor-container { padding: 0; background: none; }
+      .slide-canvas {
+        page-break-after: always; width: 100% !important; height: 100vh !important;
+        border: none !important; box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-frame">
+    
+    <!-- CABECERA PRINCIPAL -->
+    <header>
+      <button class="header-btn bordered" onclick="toggleSidebar()" title="Menú de Herramientas">☰</button>
+      <div class="brand-title">
+        <span>MEOW SLIDES APP</span>
+      </div>
+      <div class="header-actions">
+        <button class="present-btn" onclick="startPresentation()">
+          ▶ PRESENTAR
+        </button>
+      </div>
+      <button class="header-btn bordered-left" onclick="toggleTheme()" title="Modo Oscuro/Claro">🌙</button>
+    </header>
+
+    <!-- OVERLAY SIDEBAR -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- PANEL LATERAL DE HERRAMIENTAS -->
+    <div class="sidebar" id="mainSidebar">
+      <div class="sidebar-header">
+        <span>HERRAMIENTAS DE SLIDES</span>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+      </div>
+
+      <!-- COLOR NEÓN -->
+      <details>
+        <summary>🌈 Color Neón Acento</summary>
+        <div class="menu-group">
+          <button class="menu-action" onclick="changeAccentColor('#00ff66')">
+            <span class="color-dot" style="background:#00ff66;"></span> Verde Cyber
+          </button>
+          <button class="menu-action" onclick="changeAccentColor('#ff007f')">
+            <span class="color-dot" style="background:#ff007f;"></span> Magenta Neón
+          </button>
+          <button class="menu-action" onclick="changeAccentColor('#00f3ff')">
+            <span class="color-dot" style="background:#00f3ff;"></span> Cyan Eléctrico
+          </button>
+          <button class="menu-action" onclick="changeAccentColor('#ffe600')">
+            <span class="color-dot" style="background:#ffe600;"></span> Amarillo Neón
+          </button>
+          <button class="menu-action" onclick="changeAccentColor('#ffb000')">
+            <span class="color-dot" style="background:#ffb000;"></span> Ámbar Neón
+          </button>
+          
+          <div class="color-picker-row" style="margin-top:4px;">
+            <span>Personalizado:</span>
+            <input type="color" id="appAccentColor" value="#00ff66" onchange="changeAccentColor(this.value)">
+          </div>
+        </div>
+      </details>
+
+      <!-- AGREGAR ELEMENTOS -->
+      <details open>
+        <summary>➕ Insertar Elemento</summary>
+        <div class="menu-group">
+          <button class="menu-action" onclick="addElement('title'); toggleSidebar()">🔤 Título Principal</button>
+          <button class="menu-action" onclick="addElement('text'); toggleSidebar()">📝 Bloque de Texto</button>
+          <button class="menu-action" onclick="addElement('card'); toggleSidebar()">🔲 Tarjeta Neón Cyber</button>
+          <button class="menu-action" onclick="openModal('imageModal'); toggleSidebar()">🖼️ Insertar Imagen URL</button>
+        </div>
+      </details>
+
+      <!-- FONDO Y DIAPOSITIVA -->
+      <details>
+        <summary>🎨 Fondo de Diapositiva</summary>
+        <div class="menu-group">
+          <div class="color-picker-row">
+            <span>Color de Fondo:</span>
+            <input type="color" id="slideBgColor" value="#0a0a0a" onchange="setSlideBg(this.value)">
+          </div>
+          <button class="menu-action" onclick="setSlideBg('#0a0a0a')">Oscuro Predeterminado</button>
+          <button class="menu-action" onclick="setSlideBg('#000000')">Negro Puro</button>
+          <button class="menu-action" onclick="setSlideBg('#ffffff')">Blanco Puro</button>
+        </div>
+      </details>
+
+      <!-- ARCHIVO Y EXPORTACIÓN -->
+      <details>
+        <summary>📁 Archivo & Proyectos</summary>
+        <div class="menu-group">
+          <button class="menu-action" onclick="saveProject(); toggleSidebar()">💾 Guardar Avance (Local)</button>
+          <button class="menu-action" onclick="exportJSON(); toggleSidebar()">📥 Descargar Proyecto (.JSON)</button>
+          <button class="menu-action" onclick="openModal('importModal'); toggleSidebar()">📤 Cargar Proyecto (.JSON)</button>
+          <button class="menu-action" onclick="window.print(); toggleSidebar()">🖨️ Imprimir / Guardar PDF</button>
+        </div>
+      </details>
+    </div>
+
+    <!-- BARRA DE EDICIÓN RÁPIDA -->
+    <div class="toolbar-formatting">
+      <button class="tool-btn" onclick="addElement('title')">+ Título</button>
+      <button class="tool-btn" onclick="addElement('text')">+ Texto</button>
+      <button class="tool-btn" onclick="addElement('card')">+ Tarjeta</button>
+      <span style="color:var(--border); opacity:0.3;">|</span>
+      
+      <span style="font-size:10px; color:var(--subtext);">TAMAÑO:</span>
+      <input type="number" class="tool-input-num" id="fontSizeInput" value="24" onchange="updateSelectedElement('fontSize', this.value + 'px')">
+
+      <span style="font-size:10px; color:var(--subtext);">COLOR:</span>
+      <input type="color" style="width:30px; height:20px; border:none; cursor:pointer;" id="textColorInput" onchange="updateSelectedElement('color', this.value)">
+
+      <span style="color:var(--border); opacity:0.3;">|</span>
+      <button class="tool-btn" onclick="updateSelectedElement('fontWeight', 'bold')"><b>B</b></button>
+      <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'left')">⬅</button>
+      <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'center')">↔</button>
+      <button class="tool-btn" onclick="updateSelectedElement('textAlign', 'right')">➡</button>
+      
+      <span style="color:var(--border); opacity:0.3;">|</span>
+      <button class="tool-btn" style="color:#ff4444;" onclick="deleteSelectedElement()">🗑️ Eliminar Elemento</button>
+    </div>
+
+    <!-- WORKSPACE PRINCIPAL -->
+    <div class="workspace">
+      
+      <!-- NAV LATERAL DE SLIDES -->
+      <div class="slides-nav">
+        <div class="slides-nav-header">
+          <span class="slides-nav-title">SLIDES</span>
+          <button class="tool-btn" onclick="addSlide()" title="Agregar Diapositiva">+</button>
+        </div>
+        <div class="slides-list" id="slidesList"></div>
+      </div>
+
+      <!-- EDITOR DE SLIDE CANVAS -->
+      <div class="editor-container" id="editorContainer">
+        <div class="slide-canvas" id="slideCanvas"></div>
+      </div>
+
+    </div>
+
+    <!-- BARRA INFERIOR DE ESTADO Y EXPORTACIÓN INTEGRADA -->
+    <div class="sheet-footer">
+      <div class="slide-status" id="slideStatus">
+        DIAPOSITIVA <span id="currentSlideNum">1</span> DE <span id="totalSlidesNum">1</span>
+      </div>
+
+      <!-- BOTÓN EXPORTAR INTEGRADO EN EL MARGEN -->
+      <div class="export-integrated-btn" onclick="window.print()" title="Exportar o Imprimir a PDF">
+        <div class="export-btn-prefix">&rarr;</div>
+        <div class="export-btn-main">
+          EXPORTAR PDF <span class="arrow-up">&#9650;</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- OVERLAY DE PRESENTACIÓN A PANTALLA COMPLETA -->
+  <div class="presentation-overlay" id="presentationOverlay">
+    <div class="presentation-slide" id="presentationCanvas"></div>
+    <div class="presentation-controls">
+      <button class="tool-btn" onclick="prevSlide()">◀ Anterior</button>
+      <button class="tool-btn" onclick="nextSlide()">Siguiente ▶</button>
+      <button class="tool-btn" style="color:var(--accent);" onclick="endPresentation()">ESC (Salir)</button>
+    </div>
+  </div>
+
+  <!-- MODAL INSERTAR IMAGEN -->
+  <div id="imageModal" class="modal">
+    <div class="modal-header"><span>INSERTAR IMAGEN (URL)</span><button class="modal-close" onclick="closeModal('imageModal')">✕</button></div>
+    <input type="text" class="tool-input" id="imageUrlInput" placeholder="https://ejemplo.com/imagen.jpg" style="margin-bottom:12px;">
+    <button class="modal-btn" onclick="confirmAddImage()">Añadir a la Diapositiva</button>
+  </div>
+
+  <!-- MODAL CARGAR PROYECTO JSON -->
+  <div id="importModal" class="modal">
+    <div class="modal-header"><span>CARGAR PROYECTO (.JSON)</span><button class="modal-close" onclick="closeModal('importModal')">✕</button></div>
+    <textarea class="tool-input" id="importJsonInput" rows="6" placeholder="Pega aquí el contenido JSON de tu presentación..." style="margin-bottom:12px; resize:none;"></textarea>
+    <button class="modal-btn" onclick="confirmImportJSON()">Cargar Presentación</button>
+  </div>
+
+  <script>
+    // ESTRUCTURA DE DATOS
+    let slides = [
+      {
+        id: 1,
+        bg: '#0a0a0a',
+        elements: [
+          { id: 'el_1', type: 'title', content: 'MEOW SLIDES APP', x: 80, y: 120, fontSize: '48px', color: '#00ff66', fontWeight: 'bold', textAlign: 'left', width: 640 },
+          { id: 'el_2', type: 'text', content: 'Sistema de Presentaciones Cyberpunk v1.0', x: 80, y: 200, fontSize: '20px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 640 },
+          { id: 'el_3', type: 'card', content: '💡 CONSEJO: Haz clic en cualquier elemento para editarlo o moverlo libremente.', x: 80, y: 280, fontSize: '14px', color: '#ffffff', fontWeight: 'normal', textAlign: 'left', width: 500 }
+        ]
+      }
+    ];
+
+    let currentSlideIdx = 0;
+    let selectedElementId = null;
+    let isPresenting = false;
+
+    // INICIALIZACIÓN
+    function init() {
+      loadFromStorage();
+      renderSlidesNav();
+      renderCurrentSlide();
+      setupKeyboard();
+    }
+
+    // CAMBIAR COLOR DE ACENTO
+    function changeAccentColor(color) {
+      document.documentElement.style.setProperty('--accent', color);
+      localStorage.setItem('meow_slides_accent', color);
+      const picker = document.getElementById('appAccentColor');
+      if (picker) picker.value = color;
+    }
+
+    function toggleTheme() { document.body.classList.toggle('light-mode'); }
+    function toggleSidebar() {
+      document.getElementById('mainSidebar').classList.toggle('open');
+      document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+
+    // GESTIÓN DE SLIDES
+    function addSlide() {
+      const newSlide = {
+        id: Date.now(),
+        bg: '#0a0a0a',
+        elements: [
+          { id: 'el_' + Date.now(), type: 'title', content: 'NUEVA DIAPOSITIVA', x: 80, y: 180, fontSize: '36px', color: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#00ff66', fontWeight: 'bold', textAlign: 'center', width: 640 }
+        ]
+      };
+      slides.push(newSlide);
+      currentSlideIdx = slides.length - 1;
+      renderSlidesNav();
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    function duplicateSlide(idx, e) {
+      if(e) e.stopPropagation();
+      const clone = JSON.parse(JSON.stringify(slides[idx]));
+      clone.id = Date.now();
+      slides.splice(idx + 1, 0, clone);
+      currentSlideIdx = idx + 1;
+      renderSlidesNav();
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    function deleteSlide(idx, e) {
+      if(e) e.stopPropagation();
+      if (slides.length <= 1) return alert("Debe haber al menos una diapositiva.");
+      slides.splice(idx, 1);
+      currentSlideIdx = Math.max(0, currentSlideIdx - 1);
+      renderSlidesNav();
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    function moveSlide(idx, dir, e) {
+      if(e) e.stopPropagation();
+      const targetIdx = idx + dir;
+      if (targetIdx < 0 || targetIdx >= slides.length) return;
+      const temp = slides[idx];
+      slides[idx] = slides[targetIdx];
+      slides[targetIdx] = temp;
+      currentSlideIdx = targetIdx;
+      renderSlidesNav();
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    function selectSlide(idx) {
+      currentSlideIdx = idx;
+      selectedElementId = null;
+      renderSlidesNav();
+      renderCurrentSlide();
+    }
+
+    function setSlideBg(color) {
+      slides[currentSlideIdx].bg = color;
+      document.getElementById('slideCanvas').style.backgroundColor = color;
+      renderSlidesNav();
+      saveProject();
+    }
+
+    // RENDERIZADO DE LA LISTA DE SLIDES
+    function renderSlidesNav() {
+      const list = document.getElementById('slidesList');
+      list.innerHTML = '';
+      slides.forEach((slide, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = `slide-thumb ${idx === currentSlideIdx ? 'active' : ''}`;
+        thumb.onclick = () => selectSlide(idx);
+        
+        const num = document.createElement('div');
+        num.className = 'slide-thumb-number';
+        num.innerText = idx + 1;
+
+        const preview = document.createElement('div');
+        preview.className = 'slide-thumb-preview';
+        const titleEl = slide.elements.find(e => e.type === 'title' || e.type === 'text');
+        preview.innerText = titleEl ? titleEl.content.substring(0, 30) : 'Diapositiva ' + (idx + 1);
+
+        // BOTONES DE CONTROL DE THUMBNAIL
+        const ctrl = document.createElement('div');
+        ctrl.style.cssText = "position:absolute; bottom:2px; right:2px; display:flex; gap:2px;";
+        ctrl.innerHTML = `
+          <button style="background:#000; color:#fff; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="moveSlide(${idx}, -1, event)">▲</button>
+          <button style="background:#000; color:#fff; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="moveSlide(${idx}, 1, event)">▼</button>
+          <button style="background:#000; color:#fff; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="duplicateSlide(${idx}, event)">📋</button>
+          <button style="background:#000; color:#ff4444; border:1px solid #555; font-size:8px; cursor:pointer;" onclick="deleteSlide(${idx}, event)">✕</button>
+        `;
+
+        thumb.appendChild(num);
+        thumb.appendChild(preview);
+        thumb.appendChild(ctrl);
+        list.appendChild(thumb);
+      });
+
+      document.getElementById('currentSlideNum').innerText = currentSlideIdx + 1;
+      document.getElementById('totalSlidesNum').innerText = slides.length;
+    }
+
+    // RENDERIZADO DEL CANVAS ACTUAL
+    function renderCurrentSlide() {
+      const canvas = document.getElementById('slideCanvas');
+      canvas.innerHTML = '';
+      const slide = slides[currentSlideIdx];
+      canvas.style.backgroundColor = slide.bg || '#0a0a0a';
+
+      slide.elements.forEach(el => {
+        const elemDiv = document.createElement('div');
+        elemDiv.className = `slide-element ${el.id === selectedElementId ? 'selected' : ''}`;
+        if (el.type === 'card') elemDiv.classList.add('element-card');
+        
+        elemDiv.style.left = el.x + 'px';
+        elemDiv.style.top = el.y + 'px';
+        elemDiv.style.fontSize = el.fontSize || '16px';
+        elemDiv.style.color = el.color || 'var(--text)';
+        elemDiv.style.fontWeight = el.fontWeight || 'normal';
+        elemDiv.style.textAlign = el.textAlign || 'left';
+        if (el.width) elemDiv.style.width = el.width + 'px';
+
+        if (el.type === 'image') {
+          elemDiv.classList.add('element-image');
+          elemDiv.innerHTML = `<img src="${el.content}" alt="Image">`;
+        } else {
+          elemDiv.innerText = el.content;
+          elemDiv.contentEditable = true;
+          elemDiv.oninput = (e) => { el.content = e.target.innerText; renderSlidesNav(); saveProject(); };
+        }
+
+        elemDiv.onclick = (e) => { e.stopPropagation(); selectElement(el.id); };
+
+        makeDraggable(elemDiv, el);
+        canvas.appendChild(elemDiv);
+      });
+
+      canvas.onclick = () => { selectedElementId = null; renderCurrentSlide(); };
+    }
+
+    // SELECCIÓN Y EDICIÓN DE ELEMENTOS
+    function selectElement(id) {
+      selectedElementId = id;
+      const slide = slides[currentSlideIdx];
+      const el = slide.elements.find(item => item.id === id);
+      if (el) {
+        document.getElementById('fontSizeInput').value = parseInt(el.fontSize) || 16;
+        document.getElementById('textColorInput').value = el.color || '#ffffff';
+      }
+      renderCurrentSlide();
+    }
+
+    function updateSelectedElement(prop, val) {
+      if (!selectedElementId) return;
+      const slide = slides[currentSlideIdx];
+      const el = slide.elements.find(item => item.id === selectedElementId);
+      if (el) {
+        el[prop] = val;
+        renderCurrentSlide();
+        saveProject();
+      }
+    }
+
+    function deleteSelectedElement() {
+      if (!selectedElementId) return;
+      const slide = slides[currentSlideIdx];
+      slide.elements = slide.elements.filter(item => item.id !== selectedElementId);
+      selectedElementId = null;
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    function addElement(type) {
+      const slide = slides[currentSlideIdx];
+      const newEl = {
+        id: 'el_' + Date.now(),
+        type: type,
+        content: type === 'title' ? 'TÍTULO NUEVO' : (type === 'card' ? 'Texto de Tarjeta Cyber' : 'Texto borrador...'),
+        x: 100, y: 100 + (slide.elements.length * 30),
+        fontSize: type === 'title' ? '32px' : '16px',
+        color: type === 'title' ? getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() : '#ffffff',
+        fontWeight: type === 'title' ? 'bold' : 'normal',
+        textAlign: 'left', width: 400
+      };
+      slide.elements.push(newEl);
+      selectedElementId = newEl.id;
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    function confirmAddImage() {
+      const url = document.getElementById('imageUrlInput').value;
+      if (!url) return;
+      const slide = slides[currentSlideIdx];
+      slide.elements.push({
+        id: 'el_' + Date.now(),
+        type: 'image', content: url,
+        x: 150, y: 100, width: 300
+      });
+      closeModal('imageModal');
+      renderCurrentSlide();
+      saveProject();
+    }
+
+    // ARRASTRE LIBRE (DRAG & DROP)
+    function makeDraggable(element, elData) {
+      let posX = 0, posY = 0, mouseX = 0, mouseY = 0;
+      element.onmousedown = (e) => {
+        if (document.activeElement === element && element.isContentEditable) return;
+        e.preventDefault();
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        document.onmousemove = (e) => {
+          posX = mouseX - e.clientX;
+          posY = mouseY - e.clientY;
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          elData.x = element.offsetLeft - posX;
+          elData.y = element.offsetTop - posY;
+          element.style.left = elData.x + "px";
+          element.style.top = elData.y + "px";
+        };
+        document.onmouseup = () => {
+          document.onmousemove = null;
+          document.onmouseup = null;
+          saveProject();
+        };
+      };
+    }
+
+    // MODO PRESENTACIÓN
+    function startPresentation() {
+      isPresenting = true;
+      document.getElementById('presentationOverlay').classList.add('active');
+      renderPresentationSlide();
+    }
+
+    function endPresentation() {
+      isPresenting = false;
+      document.getElementById('presentationOverlay').classList.remove('active');
+    }
+
+    function renderPresentationSlide() {
+      const pCanvas = document.getElementById('presentationCanvas');
+      pCanvas.innerHTML = '';
+      const slide = slides[currentSlideIdx];
+      pCanvas.style.backgroundColor = slide.bg || '#0a0a0a';
+
+      slide.elements.forEach(el => {
+        const elemDiv = document.createElement('div');
+        elemDiv.className = `slide-element ${el.type === 'card' ? 'element-card' : ''}`;
+        elemDiv.style.left = (el.x * 1.5) + 'px'; // Escalar proporcionalmente
+        elemDiv.style.top = (el.y * 1.5) + 'px';
+        elemDiv.style.fontSize = (parseInt(el.fontSize) * 1.4) + 'px';
+        elemDiv.style.color = el.color || 'var(--text)';
+        elemDiv.style.fontWeight = el.fontWeight || 'normal';
+        elemDiv.style.textAlign = el.textAlign || 'left';
+        if (el.width) elemDiv.style.width = (el.width * 1.5) + 'px';
+
+        if (el.type === 'image') {
+          elemDiv.classList.add('element-image');
+          elemDiv.innerHTML = `<img src="${el.content}" alt="Image">`;
+        } else {
+          elemDiv.innerText = el.content;
+        }
+        pCanvas.appendChild(elemDiv);
+      });
+    }
+
+    function nextSlide() {
+      if (currentSlideIdx < slides.length - 1) {
+        currentSlideIdx++;
+        if (isPresenting) renderPresentationSlide(); else selectSlide(currentSlideIdx);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlideIdx > 0) {
+        currentSlideIdx--;
+        if (isPresenting) renderPresentationSlide(); else selectSlide(currentSlideIdx);
+      }
+    }
+
+    function setupKeyboard() {
+      document.addEventListener('keydown', (e) => {
+        if (isPresenting) {
+          if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+          if (e.key === 'ArrowLeft') prevSlide();
+          if (e.key === 'Escape') endPresentation();
+        }
+      });
+    }
+
+    // ALMACENAMIENTO Y EXPORTACIÓN
+    function saveProject() {
+      localStorage.setItem('meow_slides_data', JSON.stringify(slides));
+    }
+
+    function loadFromStorage() {
+      const data = localStorage.getItem('meow_slides_data');
+      const accent = localStorage.getItem('meow_slides_accent');
+      if (data) slides = JSON.parse(data);
+      if (accent) changeAccentColor(accent);
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(slides, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'meow_slides_presentation.json';
+      a.click();
+    }
+
+    function confirmImportJSON() {
+      try {
+        const jsonStr = document.getElementById('importJsonInput').value;
+        slides = JSON.parse(jsonStr);
+        currentSlideIdx = 0;
+        renderSlidesNav();
+        renderCurrentSlide();
+        closeModal('importModal');
+        saveProject();
+      } catch (err) { alert('Formato JSON no válido.'); }
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'block'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    // INICIAR APLICACIÓN
+    init();
+  </script>
+</body>
+</html>
